@@ -1,0 +1,21 @@
+# Render Blueprint — SentimentTrack portfolio demo
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: sentiment-track
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-dashboard.txt
+    startCommand: gunicorn server:app --bind 0.0.0.0:$PORT --timeout 120
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: PORTFOLIO_MODE
+        value: "1"
+      - key: DEMO_SHEET_URL
+        sync: false
+      - key: GITHUB_REPO_URL
+        sync: false
+      - key: CONTACT_EMAIL
+        sync: false

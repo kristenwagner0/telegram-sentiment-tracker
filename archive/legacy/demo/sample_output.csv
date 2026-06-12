@@ -1,0 +1,26 @@
+msg_id,date,week_start,chat_name,from,from_id,text,sentiment_label,sentiment_score,is_reply,top_complaints
+101,2025-01-06 09:15,2025-01-06,Stacks Korea Community,민수,user_12,새 업데이트 정말 좋네요 감사합니다,pos,0.94,FALSE,지연 | 오류 | 불만
+102,2025-01-06 11:40,2025-01-06,Stacks Korea Community,지영,user_04,출금이 아직도 안 되는데 언제 해결되나요,neg,0.91,FALSE,지연 | 오류 | 불만
+103,2025-01-07 14:22,2025-01-06,Stacks Korea Community,현우,user_09,노드 연결 방법 문서 있나요?,neu,0.62,TRUE,지연 | 오류 | 불만
+104,2025-01-08 08:05,2025-01-06,Stacks Korea Community,수진,user_17,서버 오류 때문에 하루 종일 접속 불가했어요,neg,0.88,FALSE,지연 | 오류 | 불만
+105,2025-01-09 19:30,2025-01-06,Stacks Korea Community,태호,user_21,이번 마일스톤 발표 기대됩니다,pos,0.87,FALSE,지연 | 오류 | 불만
+201,2025-01-13 10:00,2025-01-13,Stacks Korea Community,지영,user_04,또 지연 공지만 올라오네요 답답합니다,neg,0.93,FALSE,지연 | 답변없음 | 공지
+202,2025-01-14 16:45,2025-01-13,Stacks Korea Community,민수,user_12,팀이 빠르게 대응해줘서 해결됐어요,pos,0.89,FALSE,지연 | 답변없음 | 공지
+203,2025-01-15 09:10,2025-01-13,Stacks Korea Community,은지,user_31,FAQ 업데이트 됐나요?,neu,0.55,FALSE,지연 | 답변없음 | 공지
+204,2025-01-16 22:18,2025-01-13,Stacks Korea Community,현우,user_09,답변 없이 이슈만 쌓이고 있어요,neg,0.90,TRUE,지연 | 답변없음 | 공지
+301,2025-01-20 08:30,2025-01-20,Stacks Korea Community,수진,user_17,월간 리포트 공유해주셔서 도움 됐습니다,pos,0.91,FALSE,버그 | 테스트넷 | 보상
+302,2025-01-21 13:55,2025-01-20,Stacks Korea Community,태호,user_21,테스트넷 버그 리포트 어디에 올리나요,neu,0.58,FALSE,버그 | 테스트넷 | 보상
+303,2025-01-22 18:20,2025-01-20,Stacks Korea Community,지영,user_04,보상 지급이 또 늦어지고 있습니다,neg,0.92,FALSE,버그 | 테스트넷 | 보상
+304,2025-01-23 07:45,2025-01-20,Stacks Korea Community,은지,user_31,커뮤니티 AMA 일정 알려주세요,pos,0.83,FALSE,버그 | 테스트넷 | 보상
+401,2025-02-03 11:00,2025-02-03,Stacks Korea Community,민수,user_12,온보딩 가이드 훨씬 읽기 쉬워졌네요,pos,0.90,FALSE,가이드 | 혼란 | 개선
+402,2025-02-04 15:30,2025-02-03,Stacks Korea Community,현우,user_09,가이드가 서로 다른 내용이라 혼란스러워요,neg,0.86,FALSE,가이드 | 혼란 | 개선
+403,2025-02-05 20:10,2025-02-03,Stacks Korea Community,수진,user_17,개선 요청 반영된 것 같아요 감사합니다,pos,0.88,TRUE,가이드 | 혼란 | 개선
+404,2025-02-06 09:55,2025-02-03,Stacks Korea Community,태호,user_21,문서 링크가 깨져 있습니다,neg,0.84,FALSE,가이드 | 혼란 | 개선
+501,2025-02-10 10:20,2025-02-10,Stacks Korea Community,지영,user_04,이번 주는 분위기가 한결 나아진 것 같아요,pos,0.85,FALSE,대기 | 처리중 | 확인
+502,2025-02-11 14:00,2025-02-10,Stacks Korea Community,은지,user_31,티켓 제출했는데 처리중 상태가 일주일째예요,neg,0.89,FALSE,대기 | 처리중 | 확인
+503,2025-02-12 08:40,2025-02-10,Stacks Korea Community,민수,user_12,운영팀 확인 감사합니다,neu,0.61,TRUE,대기 | 처리중 | 확인
+504,2025-02-13 17:25,2025-02-10,Stacks Korea Community,현우,user_09,대기 시간이 너무 깁니다,neg,0.87,FALSE,대기 | 처리중 | 확인
+601,2025-03-03 09:00,2025-03-03,Stacks Korea Community,태호,user_21,Q1 로드맵 공유 감사합니다,pos,0.92,FALSE,로드맵 | 일정 | 기대
+602,2025-03-04 12:15,2025-03-03,Stacks Korea Community,수진,user_17,일정이 또 밀리는 건 아닌지 걱정됩니다,neg,0.80,FALSE,로드맵 | 일정 | 기대
+603,2025-03-05 18:50,2025-03-03,Stacks Korea Community,지영,user_04,기대하고 있을게요,pos,0.79,FALSE,로드맵 | 일정 | 기대
+604,2025-03-06 07:30,2025-03-03,Stacks Korea Community,은지,user_31,로드맵 문서 링크 부탁드려요,neu,0.57,FALSE,로드맵 | 일정 | 기대

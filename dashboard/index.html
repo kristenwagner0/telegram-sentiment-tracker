@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SentimentTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0F0F12;--sidebar:#0F0F12;--card:#161618;--card2:#1A1A1D;
+  --border:#2C2C2E;--border2:#2C2C2E;
+  --text:#FFFFFF;--text2:#8E8E93;--text3:#636366;
+  --pos:#5E8B7E;--neg:#9B6B6B;--neu:#8E8E93;--net:#8B9EC4;--accent:#7B78A8;
+  --pos-bg:rgba(94,139,126,.12);--neg-bg:rgba(155,107,107,.12);
+  --neu-bg:rgba(142,142,147,.1);--net-bg:rgba(139,158,196,.1);--accent-bg:rgba(61,58,92,.45);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;display:flex;overflow-x:hidden}
+.sidebar{width:210px;flex-shrink:0;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 12px;min-height:100vh;position:sticky;top:0;height:100vh}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:0 8px 20px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.logo-icon{width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent)}
+.logo-text{font-weight:600;font-size:13px;letter-spacing:-.2px}.logo-text span{color:var(--accent)}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 12px;margin:2px 0;color:var(--text2);cursor:pointer;transition:all .15s;font-size:12px;font-weight:500;border-radius:8px;user-select:none}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.nav-item.active{color:var(--text);background:var(--accent-bg)}
+.nav-icon{width:14px;height:14px;border:1px solid currentColor;border-radius:2px;opacity:.5;flex-shrink:0}
+.nav-item.active .nav-icon{opacity:.9;border-color:var(--accent)}
+.nav-badge{margin-left:auto;background:var(--neg-bg);color:var(--neg);font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px}
+.sidebar-section{font-size:10px;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;padding:14px 12px 4px;opacity:.7}
+.lang-section{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border)}
+.lang-label{font-size:10px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.lang-toggle{display:flex;gap:4px}
+.lang-btn{flex:1;padding:6px;border:1px solid var(--border2);background:none;color:var(--text2);border-radius:20px;font-family:'Inter',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;text-align:center}
+.lang-btn.active{background:var(--accent-bg);border-color:var(--accent);color:var(--text)}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0}
+.breadcrumb{font-size:10px;font-weight:500;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;opacity:.8}
+.page-title{font-size:15px;font-weight:600;letter-spacing:-.3px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.mode-pill{display:flex;gap:4px}
+.mode-btn{padding:6px 14px;background:none;border:1px solid var(--border2);border-radius:20px;color:var(--text2);font-family:'Inter',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s}
+.mode-btn.active{background:var(--accent-bg);border-color:transparent;color:var(--text)}
+.status-badge{font-size:10px;font-weight:600;padding:4px 10px;border-radius:20px}
+.status-badge.demo{background:var(--neu-bg);color:var(--neu)}
+.status-badge.live{background:var(--pos-bg);color:var(--pos)}
+.status-badge.loading{background:var(--accent-bg);color:var(--accent)}
+.app-loading{position:fixed;inset:0;background:rgba(15,15,18,.94);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.app-loading.visible{opacity:1;pointer-events:auto}
+.app-loading-inner{text-align:center;max-width:340px;padding:24px}
+.loading-spinner{width:36px;height:36px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:st-spin .75s linear infinite;margin:0 auto 18px}
+@keyframes st-spin{to{transform:rotate(360deg)}}
+.app-loading-msg{font-size:14px;color:var(--text);font-weight:600;margin-bottom:6px;letter-spacing:-.2px}
+.app-loading-sub{font-size:11px;color:var(--text2);line-height:1.5}
+.lang-status{display:none;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--accent-bg);border:1px solid rgba(123,120,168,.35);font-size:11px;color:var(--accent);line-height:1.4}
+.lang-status.visible{display:flex}
+.lang-spinner{width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:st-spin .7s linear infinite;flex-shrink:0}
+.lang-btn:disabled{opacity:.45;cursor:wait}
+.mode-desc{padding:8px 24px;background:rgba(61,58,92,.2);border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);display:flex;align-items:center;gap:6px;flex-shrink:0}
+.mode-desc .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.content{padding:20px 24px 40px;flex:1;overflow-y:auto;min-width:0}
+.panel{display:none}.panel.active{display:block}
+.summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.sum-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+.sum-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.sum-label{font-size:11px;color:var(--text2);font-weight:500}
+.sum-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;border:1px solid var(--border2)}
+.sum-icon.blue{background:var(--accent-bg);color:var(--accent)}.sum-icon.green{background:var(--pos-bg);color:var(--pos)}.sum-icon.red{background:var(--neg-bg);color:var(--neg)}.sum-icon.yellow{background:var(--neu-bg);color:var(--neu)}
+.sum-val{font-size:22px;font-weight:700;letter-spacing:-1px;line-height:1}
+.sum-val.blue{color:var(--accent)}.sum-val.green{color:var(--pos)}.sum-val.red{color:var(--neg)}.sum-val.yellow{color:var(--neu)}
+.chart-card,.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}
+.chart-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px}
+.chart-title,.card-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.chart-sub{font-size:11px;color:var(--text2)}
+.chart-controls{display:flex;flex-wrap:wrap;gap:16px 24px;margin-bottom:12px;align-items:flex-end}
+.control-group{display:flex;flex-direction:column;gap:4px}
+.control-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
+.chart-legend-wrap{margin-bottom:10px}
+.legend-hint{font-size:10px;color:var(--text3);margin-bottom:6px}
+.chart-legend{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);cursor:pointer;padding:5px 10px;border-radius:20px;transition:all .15s;user-select:none;border:1px solid transparent}
+.leg:hover{background:rgba(255,255,255,.04);color:var(--text);border-color:var(--border2)}
+.leg.on{background:var(--accent-bg);border-color:var(--border2);color:var(--text)}
+.leg.off{opacity:.35;text-decoration:line-through}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.leg-dot.net-dot{background:transparent!important;border:2px dashed var(--net);width:10px;height:0;border-radius:0}
+.range-pills,.window-pills{display:flex;gap:6px;flex-wrap:wrap}
+.rpill,.wpill{padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-family:'Inter',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s}
+.rpill.active,.wpill.active{background:var(--accent-bg);border-color:transparent;color:var(--text)}
+.chart-wrap{position:relative}
+.keydates-section{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.keydates-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.keydates-title{font-size:11px;font-weight:600;color:var(--text2)}
+.add-event-btn{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-family:'Inter',sans-serif;font-size:11px;cursor:pointer}
+.add-event-btn:hover{border-color:var(--accent);color:var(--accent)}
+.event-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.event-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card2)}
+.event-marker{width:3px;height:32px;border-radius:2px;flex-shrink:0}
+.event-date{font-size:10px;color:var(--text3);width:80px;flex-shrink:0}
+.event-label{flex:1;font-size:12px;font-weight:500}
+.event-type-badge{font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px}
+.event-delete{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px}
+.add-event-form{display:none;padding:12px;border-radius:8px;border:1px solid var(--border2);background:var(--card2);margin-top:6px}
+.add-event-form.open{display:block}
+.form-row{display:grid;grid-template-columns:140px 1fr 140px;gap:8px;align-items:end}
+.form-field{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:10px;color:var(--text3);text-transform:uppercase}
+.form-input,.form-select{padding:8px 10px;background:var(--card);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px}
+.btn-save{padding:8px 16px;background:var(--accent-bg);border:1px solid var(--accent);border-radius:20px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
+.btn-cancel{padding:8px 14px;background:none;border:1px solid var(--border2);border-radius:20px;color:var(--text2);font-family:'Inter',sans-serif;font-size:12px;cursor:pointer}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.week-select{width:100%;padding:8px 10px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;margin-bottom:10px}
+.complaint{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.c-rank{font-size:10px;color:var(--text3);width:14px;font-weight:600}
+.c-text-wrap{flex:1;min-width:0}
+.c-text{font-size:11px;display:block}
+.c-quote{font-size:11px;line-height:1.45;color:var(--text)}
+.c-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.c-bar-wrap{width:62px}.c-bar-bg{height:3px;background:var(--card2);border-radius:2px;overflow:hidden}
+.c-bar{height:3px;background:var(--neg);border-radius:2px}
+.c-count{font-size:9px;color:var(--text3);text-align:right}
+.sentiment-bars{display:flex;flex-direction:column;gap:9px}
+.sent-row{display:flex;align-items:center;gap:9px}
+.sent-label{font-size:11px;color:var(--text2);width:52px}
+.sent-track{flex:1;height:5px;background:var(--card2);border-radius:3px;overflow:hidden}
+.sent-fill{height:5px;border-radius:3px}
+.sent-pct{font-size:11px;font-weight:600;width:34px;text-align:right}
+.msg{padding:9px 0;border-bottom:1px solid var(--border)}
+.msg-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.msg-date{font-size:10px;color:var(--text3)}
+.spill{font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px}
+.s-pos{background:var(--pos-bg);color:var(--pos)}.s-neg{background:var(--neg-bg);color:var(--neg)}.s-neu{background:var(--neu-bg);color:var(--neu)}
+.msg-text{font-size:11px;color:var(--text);line-height:1.5}
+.msg-sub{font-size:10px;color:var(--text3);margin-top:3px;line-height:1.4}
+.complainer-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)}
+.complainer-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.complainer-name{font-size:11px;font-weight:600}.complainer-sub{font-size:10px;color:var(--text3)}
+.complainer-msgs{font-size:12px;font-weight:700;color:var(--neg)}
+.complainer-lock{padding:8px 0 10px;margin-bottom:6px}
+.complainer-lock-title{font-size:12px;font-weight:600;margin-bottom:4px}
+.complainer-lock-sub{font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.5}
+.complainer-unlock-btn{font-size:11px;padding:5px 12px}
+.complainer-lock-row{display:flex;gap:8px;align-items:center}
+.complainer-pw{flex:1;min-width:0}
+.complainer-pw-err{font-size:10px;color:var(--neg);margin-top:6px;min-height:14px}
+.complainer-row-masked{opacity:.55}
+.resp-row{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)}
+.resp-dot{width:7px;height:7px;border-radius:50%;margin-top:3px}
+.resp-label{font-size:11px;font-weight:500}.resp-sub{font-size:10px;color:var(--text3)}
+.resp-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px}
+.theme-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.theme-text-wrap{flex:1;min-width:0}
+.theme-text{font-size:11px}
+.theme-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.theme-bar{height:3px;background:var(--pos);border-radius:2px}
+.upload-zone{border:1px dashed var(--border2);border-radius:12px;padding:60px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--card)}
+.upload-zone:hover{border-color:var(--accent);background:var(--accent-bg)}
+.upload-icon{font-size:24px;opacity:.35;margin-bottom:10px}
+.upload-zone input{display:none}
+.info-bar{display:flex;align-items:flex-start;gap:8px;background:var(--accent-bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:12px;font-size:11px;color:var(--text2);line-height:1.6}
+.sheets-card{max-width:640px}
+.sheet-input{width:100%;padding:10px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;margin:10px 0}
+.sheet-steps{font-size:12px;color:var(--text2);line-height:1.8;margin:12px 0}
+.sheet-steps ol{padding-left:18px}
+.sheet-status{font-size:11px;margin-top:8px;padding:8px 10px;border-radius:8px}
+.sheet-status.ok{background:var(--pos-bg);color:var(--pos)}
+.sheet-status.error{background:var(--neg-bg);color:var(--neg)}
+.sheet-status.loading{background:var(--accent-bg);color:var(--accent)}
+.btn-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn-primary{padding:8px 16px;background:var(--accent-bg);border:1px solid var(--accent);border-radius:20px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
+.btn-secondary{padding:8px 16px;background:none;border:1px solid var(--border2);border-radius:20px;color:var(--text2);font-family:'Inter',sans-serif;font-size:12px;cursor:pointer}
+.search-input{width:100%;max-width:360px;padding:8px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;margin-bottom:12px}
+.search-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.search-row .search-input{flex:1;min-width:180px;max-width:none;margin-bottom:0}
+.msg-search-status{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);min-height:18px;margin-bottom:10px}
+.msg-search-status.loading{color:var(--accent)}
+.msg-search-spinner{width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:st-spin .7s linear infinite;flex-shrink:0}
+@media(max-width:900px){.sidebar{display:none}.summary-row,.three-col{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">ST</div>
+    <div class="logo-text">Sentiment<span>Track</span></div>
+  </div>
+  <div class="sidebar-section">Navigation</div>
+  <div class="nav-item active" data-nav="dashboard"><span class="nav-icon"></span> Dashboard</div>
+  <div class="nav-item" data-nav="trends"><span class="nav-icon"></span> Trends</div>
+  <div class="nav-item" data-nav="complaints"><span class="nav-icon"></span> Complaints <span class="nav-badge" id="complaintBadge">5</span></div>
+  <div class="nav-item" data-nav="messages"><span class="nav-icon"></span> Messages</div>
+  <div class="sidebar-section">Data</div>
+  <div class="nav-item" data-nav="sheets" id="nav-sheets"><span class="nav-icon"></span> Google Sheets</div>
+  <div class="nav-item" data-nav="upload" id="nav-upload"><span class="nav-icon"></span> Upload export</div>
+  <div class="nav-item" data-nav="gettool" id="nav-gettool" style="display:none"><span class="nav-icon"></span> Get the tool</div>
+  <div class="sidebar-section">Settings</div>
+  <div class="nav-item" data-nav="settings"><span class="nav-icon"></span> Settings</div>
+  <div class="lang-section">
+    <div class="lang-label">Display language</div>
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="lko">한국어</button>
+      <button class="lang-btn" id="len">English</button>
+    </div>
+    <div class="lang-status" id="langStatus" aria-live="polite"></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="breadcrumb">Community analytics</div>
+      <div class="page-title" id="pageTitle">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="mode-pill">
+        <button class="mode-btn active" data-mode="community">Community view</button>
+        <button class="mode-btn" data-mode="upload">Analyze my chat</button>
+      </div>
+      <span class="status-badge demo" id="sheetStatusBadge">Demo</span>
+    </div>
+  </div>
+  <div class="mode-desc"><div class="dot"></div><span id="modeDescText">Demo preview · connect Google Sheets for live data</span></div>
+
+  <div class="content">
+
+    <div id="panel-dashboard" class="panel active">
+      <div class="summary-row">
+        <div class="sum-card"><div class="sum-top"><div class="sum-label">Total messages</div><div class="sum-icon blue">#</div></div><div class="sum-val blue" id="sumTotal">—</div></div>
+        <div class="sum-card"><div class="sum-top"><div class="sum-label">Positive</div><div class="sum-icon green">+</div></div><div class="sum-val green" id="sumPos">—</div></div>
+        <div class="sum-card"><div class="sum-top"><div class="sum-label">Negative</div><div class="sum-icon red">−</div></div><div class="sum-val red" id="sumNeg">—</div></div>
+        <div class="sum-card"><div class="sum-top"><div class="sum-label">Neutral</div><div class="sum-icon yellow">○</div></div><div class="sum-val yellow" id="sumNeu">—</div></div>
+      </div>
+      <div class="three-col">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Top complaints</div><div style="font-size:10px;color:var(--text3)">Real messages</div></div>
+          <select class="week-select" id="weekSelect"></select>
+          <div id="complaintList"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Latest week breakdown</div><div style="font-size:10px;color:var(--text3)" id="weekMsgCount">—</div></div>
+          <div class="sentiment-bars">
+            <div class="sent-row"><div class="sent-label">Positive</div><div class="sent-track"><div class="sent-fill" id="barPos" style="width:0%;background:var(--pos)"></div></div><div class="sent-pct" id="pctPos" style="color:var(--pos)">—</div></div>
+            <div class="sent-row"><div class="sent-label">Negative</div><div class="sent-track"><div class="sent-fill" id="barNeg" style="width:0%;background:var(--neg)"></div></div><div class="sent-pct" id="pctNeg" style="color:var(--neg)">—</div></div>
+            <div class="sent-row"><div class="sent-label">Neutral</div><div class="sent-track"><div class="sent-fill" id="barNeu" style="width:0%;background:var(--neu)"></div></div><div class="sent-pct" id="pctNeu" style="color:var(--neu)">—</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Recent messages</div><div id="msgNote" style="font-size:10px;color:var(--text3)">—</div></div>
+          <div id="msgFeed"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-trends" class="panel">
+      <div class="chart-card">
+        <div class="chart-head">
+          <div>
+            <div class="chart-title">Sentiment over time</div>
+            <div class="chart-sub" id="chartSub">Weekly · 1 year · hover for detail</div>
+          </div>
+        </div>
+        <div class="chart-controls">
+          <div class="control-group">
+            <div class="control-label">Granularity</div>
+            <div class="range-pills">
+              <button type="button" class="rpill active" data-range="weekly">Weekly</button>
+              <button type="button" class="rpill" data-range="monthly">Monthly</button>
+              <button type="button" class="rpill" data-range="yearly">Yearly</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <div class="control-label">Time range</div>
+            <div class="window-pills" id="windowPills"></div>
+          </div>
+        </div>
+        <div class="chart-legend-wrap">
+          <div class="legend-hint">Click lines to show or hide</div>
+          <div class="chart-legend">
+            <div class="leg on" data-series="pos" role="button" aria-pressed="true" title="Toggle positive line"><div class="leg-dot" style="background:var(--pos)"></div>Positive</div>
+            <div class="leg on" data-series="neg" role="button" aria-pressed="true" title="Toggle negative line"><div class="leg-dot" style="background:var(--neg)"></div>Negative</div>
+            <div class="leg on" data-series="neu" role="button" aria-pressed="true" title="Toggle neutral line"><div class="leg-dot" style="background:var(--neu)"></div>Neutral</div>
+            <div class="leg on" data-series="net" role="button" aria-pressed="true" title="Toggle net sentiment line"><div class="leg-dot net-dot" style="border-color:var(--net)"></div>Net sentiment</div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="lineChart" height="100"></canvas>
+          <div id="chartAnnotations" style="position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none"></div>
+        </div>
+        <div class="keydates-section">
+          <div class="keydates-header">
+            <div class="keydates-title">Key dates <span style="color:var(--text3);font-weight:400;font-size:10px" id="eventCount"></span></div>
+            <button class="add-event-btn" onclick="toggleForm()">+ Add event</button>
+          </div>
+          <div class="event-list" id="eventList"></div>
+          <div class="add-event-form" id="addEventForm">
+            <div class="form-row">
+              <div class="form-field"><div class="form-label">Date</div><input type="date" class="form-input" id="eventDate"></div>
+              <div class="form-field"><div class="form-label">Label</div><input type="text" class="form-input" id="eventLabel" placeholder="e.g. AMA session, bot outage…"></div>
+              <div class="form-field"><div class="form-label">Type</div>
+                <select class="form-select" id="eventType">
+                  <option value="neg">Incident</option>
+                  <option value="pos">Positive event</option>
+                  <option value="neu">Announcement</option>
+                  <option value="acc">Other</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:10px">
+              <button class="btn-save" onclick="saveEvent()">Save event</button>
+              <button class="btn-cancel" onclick="toggleForm()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-complaints" class="panel">
+      <div class="three-col">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Top complaints by week</div><div style="font-size:10px;color:var(--text3)">Real messages</div></div>
+          <select class="week-select" id="weekSelect2" onchange="document.getElementById('weekSelect').value=this.value;setWeek(this.value)"></select>
+          <div id="complaintList2"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Most active voices</div><div style="font-size:10px;color:var(--text3)">Negative messages</div></div>
+          <div id="complainerList"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Top positive themes</div></div>
+          <div id="positiveThemes"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">Response sentiment</div><div style="font-size:10px;color:var(--text3)">Reply messages</div></div>
+        <div id="responseSentiment"></div>
+      </div>
+    </div>
+
+    <div id="panel-messages" class="panel">
+      <div class="card">
+        <div class="card-head"><div class="card-title">Message log</div><div id="msgLogMeta" style="font-size:10px;color:var(--text3)">Newest first</div></div>
+        <div class="search-row">
+          <input class="search-input" id="msgSearch" placeholder="Search message text…" autocomplete="off">
+          <button type="button" class="btn-primary" id="msgSearchBtn">Search</button>
+        </div>
+        <div class="msg-search-status" id="msgSearchStatus" aria-live="polite"></div>
+        <div id="msgTable"></div>
+      </div>
+    </div>
+
+    <div id="panel-sheets" class="panel">
+      <div class="card sheets-card">
+        <div class="card-title" style="margin-bottom:4px">Connect Google Sheets</div>
+        <div class="chart-sub">Paste your Google Sheets URL — edit links are auto-converted to CSV export</div>
+        <input class="sheet-input" id="sheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/…/edit or export?format=csv">
+        <div class="btn-row">
+          <button class="btn-primary" id="connectSheetBtn">Connect sheet</button>
+          <button class="btn-secondary" id="useDemoBtn">Use demo data</button>
+        </div>
+        <div class="sheet-status" id="sheetStatus">Demo data loaded for portfolio preview.</div>
+        <div class="sheet-steps">
+          <strong>Setup steps:</strong>
+          <ol>
+            <li>Run <code>telegram_sentiment.py</code> on your Telegram export</li>
+            <li>Optional: <code>refresh_keywords.py</code> and <code>translate_output.py</code> for better complaints + English</li>
+            <li>Import the CSV into Google Sheets · Share as "Anyone with the link"</li>
+            <li>Paste the sheet URL above and click Connect</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    
+    <div id="panel-gettool" class="panel">
+      <div class="card sheets-card">
+        <div class="card-title" style="margin-bottom:4px">Use SentimentTrack on your own data</div>
+        <div class="chart-sub" style="margin-bottom:14px">Sentiment analysis runs on your computer (free). This hosted site is the interactive viewer.</div>
+        <div class="sheet-steps">
+          <strong>Run locally:</strong>
+          <ol>
+            <li>Export your Telegram chat as JSON from Telegram Desktop</li>
+            <li>Clone the repo: <a id="gettoolRepoLink" href="#" target="_blank" rel="noopener" style="color:var(--accent)">GitHub</a></li>
+            <li>Run <code>python telegram_sentiment.py -i exports/your_chat/result.json --lang ko</code></li>
+            <li>Open the dashboard locally, or drop your output CSV below</li>
+          </ol>
+        </div>
+        <div class="upload-zone" id="csvDropZone" onclick="document.getElementById('csvFileInput').click()" style="padding:36px 24px;margin-top:12px">
+          <div class="upload-icon">↑</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:6px">Drop a processed CSV here</div>
+          <div style="font-size:12px;color:var(--text2)">Output from <code>telegram_sentiment.py</code> · parsed in your browser only</div>
+          <input type="file" id="csvFileInput" accept=".csv" style="display:none">
+        </div>
+        <div class="info-bar" style="margin-top:12px">
+          <span>Raw Telegram JSON cannot be analyzed in the browser — the ML model runs locally. Questions? Contact <span id="gettoolContact">me via my resume site</span>.</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-upload" class="panel">
+      <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">↑</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px">Drop your Telegram JSON export here</div>
+        <div style="font-size:12px;color:var(--text2)">result.json from Telegram Desktop</div>
+        <input type="file" id="fileInput" accept=".json">
+      </div>
+      <div class="info-bar">
+        <span>This dashboard displays results from Google Sheets. To analyze a raw Telegram export, run <code>telegram_sentiment.py</code> on your own computer.</span>
+      </div>
+    </div>
+
+    <div id="panel-settings" class="panel">
+      <div class="card sheets-card">
+        <div class="card-title">Settings</div>
+        <div class="chart-sub" style="margin:8px 0 14px">English mode shows a translation with the Korean original below. Requires the dashboard server running (for live translate).</div>
+        <div class="lang-label">Display language</div>
+        <div class="lang-toggle" style="max-width:220px;margin-bottom:8px">
+          <button class="lang-btn active" onclick="setLang('ko')">한국어</button>
+          <button class="lang-btn" onclick="setLang('en')">English</button>
+        </div>
+        <div class="lang-status" id="langStatusSettings" aria-live="polite"></div>
+        <div class="card-title" style="margin-top:8px">About</div>
+        <p style="font-size:12px;color:var(--text2);line-height:1.7;margin-top:8px">
+          SentimentTrack analyzes Telegram community exports with HuggingFace sentiment models (Koelectra-NSMC for Korean).
+          Surfaces weekly complaint themes, sentiment trends, and repeat negative voices.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="appLoading" class="app-loading" aria-live="polite" aria-busy="true">
+  <div class="app-loading-inner">
+    <div class="loading-spinner"></div>
+    <div class="app-loading-msg" id="appLoadingMsg">Loading community data…</div>
+    <div class="app-loading-sub" id="appLoadingSub">Fetching from Google Sheets</div>
+  </div>
+</div>
+
+<script src="app.js?v=8"></script>
+<script>
+const origSetWeek = setWeek;
+setWeek = function(i) { origSetWeek(i); const w2=document.getElementById('weekSelect2'); if(w2) w2.value=i; renderComplaints2(); };
+async function renderComplaints2() {
+  const d = getComplaints52()[getCurrentWeek()] || [];
+  const max = d[0]?.n || 1;
+  const el = document.getElementById('complaintList2');
+  if (!el) return;
+  if (getLang() === 'en') {
+    const translated = await translateTexts(d.map(c => c.t));
+    d.forEach((c, i) => { c.tEn = translated[i] || c.tEn; });
+  }
+  el.innerHTML = d.map((c,j) => {
+    const isEn = getLang() === 'en';
+    const en = isEn ? (c.tEn || '') : '';
+    const hasKo = /[가-힣]/.test(c.t || '');
+    const label = isEn && en ? en : c.t;
+    const sub = isEn && en && hasKo ? `<div class="c-sub">${c.t}</div>` : '';
+    return `<div class="complaint"><span class="c-rank">${j+1}</span><div class="c-text-wrap"><span class="c-text">${label}</span>${sub}</div><div class="c-bar-wrap"><div class="c-bar-bg"><div class="c-bar" style="width:${Math.round(c.n/max*100)}%"></div></div><div class="c-count">${c.n} msgs</div></div></div>`;
+  }).join('');
+}
+const origRefresh = refreshUI;
+refreshUI = function() { origRefresh(); const w2=document.getElementById('weekSelect2'); if(w2){ w2.innerHTML=document.getElementById('weekSelect').innerHTML; w2.value=getCurrentWeek();} renderComplaints2(); };
+document.addEventListener('DOMContentLoaded', ()=>{ setTimeout(()=>{ const w2=document.getElementById('weekSelect2'); if(w2) w2.innerHTML=document.getElementById('weekSelect').innerHTML; renderComplaints2(); }, 200); });
+</script>
+</body>
+</html>

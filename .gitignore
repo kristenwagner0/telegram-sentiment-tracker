@@ -1,0 +1,13 @@
+.env
+credentials/
+exports/**
+!exports/.gitkeep
+output/*
+!output/.gitkeep
+archive/output-snapshots/*.csv
+archive/output-snapshots/*.log
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store

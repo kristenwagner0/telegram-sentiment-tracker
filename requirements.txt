@@ -1,0 +1,12 @@
+transformers
+torch
+pandas
+scikit-learn
+tqdm
+langdetect
+gspread
+google-auth
+python-dotenv
+flask
+requests
+deep-translator
