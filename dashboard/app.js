@@ -1259,26 +1259,29 @@ function renderAnnotations() {
 
     const overlap = plotted.filter((p) => p.idx === idx);
     const slot = overlap.findIndex((p) => p.ev.id === ev.id);
-    const labelBottom = 16 + slot * 38;
-
-    const milestone = document.createElement("div");
-    milestone.className = "chart-milestone";
-    milestone.style.left = `${x}px`;
-    milestone.style.top = `${y}px`;
+    const labelTop = chartArea.top + 4 + slot * 22;
 
     const label = document.createElement("div");
     label.className = "chart-milestone-label";
     label.textContent = ev.label;
     label.title = ev.label;
-    label.style.cssText = `bottom:${labelBottom}px;background:${cfg.bg};color:${cfg.color};border:1px solid ${cfg.color}`;
+    label.style.cssText = `left:${x}px;top:${labelTop}px;color:${cfg.color};border-color:${cfg.color}`;
+
+    const labelBottom = labelTop + 20;
+    const stemHeight = Math.max(0, y - labelBottom - 6);
+    if (stemHeight > 2) {
+      const stem = document.createElement("div");
+      stem.className = "chart-milestone-stem";
+      stem.style.cssText = `left:${x}px;top:${labelBottom}px;height:${stemHeight}px;border-color:${cfg.color}`;
+      wrap.appendChild(stem);
+    }
 
     const pin = document.createElement("div");
     pin.className = "chart-milestone-pin";
-    pin.style.background = cfg.color;
+    pin.style.cssText = `left:${x}px;top:${y}px;background:${cfg.color}`;
 
-    milestone.appendChild(label);
-    milestone.appendChild(pin);
-    wrap.appendChild(milestone);
+    wrap.appendChild(label);
+    wrap.appendChild(pin);
   });
 }
 
