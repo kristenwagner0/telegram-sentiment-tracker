@@ -286,8 +286,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
           <div class="control-group">
             <div class="control-label">Granularity</div>
             <div class="range-pills">
-              <button type="button" class="rpill active" data-range="weekly">Weekly</button>
-              <button type="button" class="rpill" data-range="monthly">Monthly</button>
+              <button type="button" class="rpill" data-range="weekly">Weekly</button>
+              <button type="button" class="rpill active" data-range="monthly">Monthly</button>
               <button type="button" class="rpill" data-range="yearly">Yearly</button>
             </div>
           </div>
@@ -460,7 +460,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
   </div>
 </div>
 
-<script src="app.js?v=16"></script>
+<script src="app.js?v=17"></script>
 <script>
 const origSetWeek = setWeek;
 setWeek = function(i) { origSetWeek(i); const w2=document.getElementById('weekSelect2'); if(w2) w2.value=i; renderComplaints2(); };

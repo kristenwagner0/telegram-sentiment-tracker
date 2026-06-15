@@ -16,8 +16,8 @@ const SERIES_INDEX = { pos: 0, neg: 1, neu: 2, net: 3 };
 let lang = "ko";
 let currentWeek = 0;
 let lineChart = null;
-let currentRange = "weekly";
-let currentWindow = { weekly: "52w", monthly: "12m", yearly: "all" };
+let currentRange = "monthly";
+let currentWindow = { weekly: "52w", monthly: "all", yearly: "all" };
 
 const CHART_WINDOWS = {
   weekly: [
@@ -1149,33 +1149,74 @@ function updateChartRange(r, btn) {
   applyChartView();
 }
 
+function parseEventTime(date) {
+  if (!date) return NaN;
+  if (date.length >= 10) return new Date(date.slice(0, 10)).getTime();
+  if (date.length === 7) return new Date(`${date}-01`).getTime();
+  if (date.length === 4) return new Date(`${date}-06-01`).getTime();
+  return NaN;
+}
+
+function keyRangeStart(key, range) {
+  if (range === "yearly") return new Date(`${key}-01-01`).getTime();
+  if (range === "monthly") return new Date(`${key}-01`).getTime();
+  return new Date(String(key).slice(0, 10)).getTime();
+}
+
+function keyRangeEnd(key, range) {
+  if (range === "yearly") return new Date(`${key}-12-31T23:59:59`).getTime();
+  if (range === "monthly") {
+    const [y, m] = key.split("-").map(Number);
+    return new Date(y, m, 0, 23, 59, 59).getTime();
+  }
+  const d = new Date(String(key).slice(0, 10));
+  d.setDate(d.getDate() + 6);
+  d.setHours(23, 59, 59, 999);
+  return d.getTime();
+}
+
+function eventInVisibleRange(ev, keys, range) {
+  const evTime = parseEventTime(ev.date);
+  if (Number.isNaN(evTime)) return false;
+  const start = keyRangeStart(keys[0], range);
+  const end = keyRangeEnd(keys[keys.length - 1], range);
+  return evTime >= start && evTime <= end;
+}
+
+function nearestKeyIndex(targetTime, keys, range) {
+  let best = -1;
+  let bestDist = Infinity;
+  keys.forEach((k, i) => {
+    const kt = keyRangeStart(k, range);
+    const dist = Math.abs(kt - targetTime);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = i;
+    }
+  });
+  return best;
+}
+
 function eventChartIndex(ev, keys, range) {
   if (!keys.length) return -1;
+  if (!eventInVisibleRange(ev, keys, range)) return -1;
+
   const date = ev.date || "";
   if (range === "yearly") {
     const y = date.slice(0, 4);
-    return keys.indexOf(y);
+    const idx = keys.indexOf(y);
+    return idx >= 0 ? idx : nearestKeyIndex(parseEventTime(date), keys, range);
   }
   if (range === "monthly") {
     const monthKey = date.length >= 7 ? date.slice(0, 7) : date;
-    return keys.indexOf(monthKey);
+    const idx = keys.indexOf(monthKey);
+    return idx >= 0 ? idx : nearestKeyIndex(parseEventTime(date), keys, range);
   }
   if (range === "weekly") {
     const iso = date.length >= 10 ? date.slice(0, 10) : `${date.slice(0, 7)}-15`;
-    let idx = keys.indexOf(iso);
+    const idx = keys.indexOf(iso);
     if (idx >= 0) return idx;
-    const target = new Date(iso).getTime();
-    if (Number.isNaN(target)) return -1;
-    let best = -1;
-    let bestDist = Infinity;
-    keys.forEach((k, i) => {
-      const dist = Math.abs(new Date(k).getTime() - target);
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = i;
-      }
-    });
-    return best;
+    return nearestKeyIndex(new Date(iso).getTime(), keys, range);
   }
   return -1;
 }
