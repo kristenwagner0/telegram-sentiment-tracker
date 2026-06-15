@@ -139,10 +139,51 @@ def load_week_counts(template: Path) -> list[tuple[str, int]]:
     return sorted(counts.items())
 
 
-def sentiment_probs(week_idx: int, total_weeks: int) -> tuple[float, float, float]:
+# Fictional incidents — visible dips/spikes on trend charts
+SENTIMENT_EVENTS: list[tuple[str, str, float, float]] = [
+    ("2021-05-03", "2021-07-12", -0.11, +0.13),
+    ("2022-10-17", "2023-02-06", -0.16, +0.20),
+    ("2023-08-21", "2023-10-09", +0.15, -0.11),
+    ("2024-02-26", "2024-05-20", +0.20, -0.14),
+    ("2024-09-16", "2024-11-04", -0.12, +0.15),
+    ("2025-05-05", "2025-07-21", +0.14, -0.10),
+]
+
+
+def _event_strength(week_start: str, start_s: str, end_s: str) -> float:
+    ws = datetime.strptime(week_start[:10], "%Y-%m-%d")
+    start = datetime.strptime(start_s, "%Y-%m-%d")
+    end = datetime.strptime(end_s, "%Y-%m-%d")
+    if ws < start or ws > end:
+        return 0.0
+    mid = start + (end - start) / 2
+    half_span = max(((end - start).days / 2), 1)
+    return max(0.0, 1.0 - abs((ws - mid).days) / half_span)
+
+
+def event_modifier(week_start: str) -> tuple[float, float]:
+    pos_d = neg_d = 0.0
+    for start_s, end_s, pd, nd in SENTIMENT_EVENTS:
+        s = _event_strength(week_start, start_s, end_s)
+        if s:
+            pos_d += pd * s
+            neg_d += nd * s
+    return pos_d, neg_d
+
+
+def sentiment_probs(
+    week_idx: int,
+    total_weeks: int,
+    week_start: str,
+    rng: random.Random,
+) -> tuple[float, float, float]:
     t = week_idx / max(total_weeks - 1, 1)
     pos = 0.35 + 0.25 * t
     neg = 0.38 - 0.16 * t
+    pos_d, neg_d = event_modifier(week_start)
+    jitter = rng.uniform(-0.04, 0.04)
+    pos = max(0.08, min(0.78, pos + pos_d + jitter))
+    neg = max(0.08, min(0.62, neg + neg_d - jitter * 0.6))
     neu = max(0.05, 1.0 - pos - neg)
     total = pos + neg + neu
     return pos / total, neg / total, neu / total
@@ -183,7 +224,7 @@ def generate(template: Path, output: Path, seed: int, max_rows: int | None = Non
     rows_buffer: list[dict] = []
 
     for week_idx, (week_start, count) in enumerate(week_counts):
-        pos_p, neg_p, _ = sentiment_probs(week_idx, total_weeks)
+        pos_p, neg_p, _ = sentiment_probs(week_idx, total_weeks, week_start, rng)
         base = datetime.strptime(week_start[:10], "%Y-%m-%d")
         for _ in range(count):
             if max_rows is not None and msg_id > max_rows:

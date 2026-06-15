@@ -50,9 +50,10 @@ const COMPLAINERS_DEMO_PW = "CommunityReview2026";
 const COMPLAINERS_UNLOCK_KEY = "st_complainers_unlocked";
 
 let events = JSON.parse(localStorage.getItem("st_events") || "null") || [
-  { id: 1, date: "2025-02", label: "Testnet maintenance (3 days)", type: "neg" },
-  { id: 2, date: "2025-05", label: "Community AMA session", type: "pos" },
-  { id: 3, date: "2025-08", label: "New announcement format", type: "neu" },
+  { id: 1, date: "2022-12", label: "Validator incident", type: "neg" },
+  { id: 2, date: "2024-04", label: "Mainnet launch", type: "pos" },
+  { id: 3, date: "2024-10", label: "Network instability", type: "neg" },
+  { id: 4, date: "2025-06", label: "Governance AMA", type: "pos" },
 ];
 let nextId = Math.max(0, ...events.map((e) => e.id)) + 1;
 
@@ -1359,7 +1360,58 @@ function useDemoData() {
   navigate("dashboard");
 }
 
-function demoTrendPct(i, total, startPos, endPos, startNeg, endNeg) {
+const DEMO_SENTIMENT_EVENTS = [
+  ["2021-05-03", "2021-07-12", -11, 13],
+  ["2022-10-17", "2023-02-06", -16, 20],
+  ["2023-08-21", "2023-10-09", 15, -11],
+  ["2024-02-26", "2024-05-20", 20, -14],
+  ["2024-09-16", "2024-11-04", -12, 15],
+  ["2025-05-05", "2025-07-21", 14, -10],
+];
+
+function demoEventStrength(isoDate, start, end) {
+  const ws = new Date(isoDate).getTime();
+  const s = new Date(start).getTime();
+  const e = new Date(end).getTime();
+  if (ws < s || ws > e) return 0;
+  const mid = (s + e) / 2;
+  const half = Math.max((e - s) / 2, 86400000);
+  return Math.max(0, 1 - Math.abs(ws - mid) / half);
+}
+
+function demoEventModifier(isoDate) {
+  let posD = 0;
+  let negD = 0;
+  for (const [start, end, pd, nd] of DEMO_SENTIMENT_EVENTS) {
+    const strength = demoEventStrength(isoDate, start, end);
+    if (strength) {
+      posD += (pd / 100) * strength;
+      negD += (nd / 100) * strength;
+    }
+  }
+  return { posD, negD };
+}
+
+function demoTrendPct(i, total, startPos, endPos, startNeg, endNeg, isoDate) {
+  const t = total <= 1 ? 0 : i / (total - 1);
+  let pos = startPos + (endPos - startPos) * t + Math.sin(i * 0.7) * 2;
+  let neg = startNeg + (endNeg - startNeg) * t + Math.cos(i * 0.5) * 2;
+  if (isoDate) {
+    const { posD, negD } = demoEventModifier(isoDate);
+    pos += posD * 100;
+    neg += negD * 100;
+  }
+  const neu = Math.max(5, 100 - pos - neg);
+  const adjPos = 100 - neg - neu;
+  return {
+    pos: Math.round(Math.max(8, Math.min(78, adjPos))),
+    neg: Math.round(Math.max(8, Math.min(62, neg))),
+    neu: Math.round(neu),
+    net: Math.round(((adjPos - neg) / 100) * 100) / 100,
+  };
+}
+
+
   const t = total <= 1 ? 0 : i / (total - 1);
   const pos = Math.round(startPos + (endPos - startPos) * t + Math.sin(i * 0.7) * 2);
   const neg = Math.round(startNeg + (endNeg - startNeg) * t + Math.cos(i * 0.5) * 2);
@@ -1400,7 +1452,7 @@ function buildDemoData() {
   const monthlyNeu = [];
   const monthlyNet = [];
   monthlyKeys.forEach((_, i) => {
-    const s = demoTrendPct(i, monthlyKeys.length, 35, 58, 38, 22);
+    const s = demoTrendPct(i, monthlyKeys.length, 35, 58, 38, 22, `${monthlyKeys[i]}-01`);
     monthlyPos.push(s.pos);
     monthlyNeg.push(s.neg);
     monthlyNeu.push(s.neu);
@@ -1423,7 +1475,7 @@ function buildDemoData() {
     wkKeys.push(iso);
     weeks52.push(d.toLocaleDateString("en", { month: "short", day: "numeric", year: "numeric" }));
     wkLabels.push(d.toLocaleString("en", { month: "short", day: "numeric", year: "numeric" }));
-    const s = demoTrendPct(i, TOTAL_WEEKS, 35, 58, 38, 22);
+    const s = demoTrendPct(i, TOTAL_WEEKS, 35, 58, 38, 22, iso);
     wkPos.push(s.pos);
     wkNeg.push(s.neg);
     wkNeu.push(s.neu);
@@ -1439,7 +1491,7 @@ function buildDemoData() {
   const yearlyNeu = [];
   const yearlyNet = [];
   yearlyKeys.forEach((_, i) => {
-    const s = demoTrendPct(i, yearlyKeys.length, 35, 58, 38, 22);
+    const s = demoTrendPct(i, yearlyKeys.length, 35, 58, 38, 22, `${yearlyKeys[i]}-06-01`);
     yearlyPos.push(s.pos);
     yearlyNeg.push(s.neg);
     yearlyNeu.push(s.neu);
