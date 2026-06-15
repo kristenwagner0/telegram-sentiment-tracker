@@ -49,13 +49,28 @@ const translationCache = JSON.parse(localStorage.getItem("st_translations_v2") |
 const COMPLAINERS_DEMO_PW = "CommunityReview2026";
 const COMPLAINERS_UNLOCK_KEY = "st_complainers_unlocked";
 
-let events = JSON.parse(localStorage.getItem("st_events") || "null") || [
-  { id: 1, date: "2022-12", label: "Validator incident", type: "neg" },
-  { id: 2, date: "2024-04", label: "Mainnet launch", type: "pos" },
-  { id: 3, date: "2024-10", label: "Network instability", type: "neg" },
-  { id: 4, date: "2025-06", label: "Governance AMA", type: "pos" },
+const PORTFOLIO_EVENTS = [
+  { id: 1, date: "2021-06-08", label: "Bridge outage", type: "neg" },
+  { id: 2, date: "2022-12-13", label: "Validator incident", type: "neg" },
+  { id: 3, date: "2023-09-18", label: "Testnet milestone", type: "pos" },
+  { id: 4, date: "2024-04-02", label: "Mainnet launch", type: "pos" },
+  { id: 5, date: "2024-10-07", label: "Network instability", type: "neg" },
+  { id: 6, date: "2025-06-09", label: "Governance AMA", type: "pos" },
 ];
+const PORTFOLIO_EVENTS_KEY = "st_events_portfolio_v1";
+
+let events = JSON.parse(localStorage.getItem("st_events") || "null") || [...PORTFOLIO_EVENTS];
 let nextId = Math.max(0, ...events.map((e) => e.id)) + 1;
+
+function seedPortfolioEvents(force = false) {
+  if (!force && localStorage.getItem(PORTFOLIO_EVENTS_KEY) === "1") return;
+  events = PORTFOLIO_EVENTS.map((e) => ({ ...e }));
+  nextId = events.length + 1;
+  localStorage.setItem("st_events", JSON.stringify(events));
+  localStorage.setItem(PORTFOLIO_EVENTS_KEY, "1");
+  renderEventList();
+  renderAnnotations();
+}
 
 const typeConfig = {
   neg: { color: COLORS.neg, bg: COLORS.negBg, label: "Incident" },
@@ -596,6 +611,7 @@ async function fetchAndApplyDemo() {
     setDataBadge("portfolio");
     updateModeDesc("community");
     showSheetStatus(`Illustrative demo · ${count.toLocaleString()} synthetic messages loaded`, "ok");
+    seedPortfolioEvents(true);
     navigate("dashboard");
   } finally {
     setAppLoading(false);
@@ -1133,6 +1149,37 @@ function updateChartRange(r, btn) {
   applyChartView();
 }
 
+function eventChartIndex(ev, keys, range) {
+  if (!keys.length) return -1;
+  const date = ev.date || "";
+  if (range === "yearly") {
+    const y = date.slice(0, 4);
+    return keys.indexOf(y);
+  }
+  if (range === "monthly") {
+    const monthKey = date.length >= 7 ? date.slice(0, 7) : date;
+    return keys.indexOf(monthKey);
+  }
+  if (range === "weekly") {
+    const iso = date.length >= 10 ? date.slice(0, 10) : `${date.slice(0, 7)}-15`;
+    let idx = keys.indexOf(iso);
+    if (idx >= 0) return idx;
+    const target = new Date(iso).getTime();
+    if (Number.isNaN(target)) return -1;
+    let best = -1;
+    let bestDist = Infinity;
+    keys.forEach((k, i) => {
+      const dist = Math.abs(new Date(k).getTime() - target);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = i;
+      }
+    });
+    return best;
+  }
+  return -1;
+}
+
 function renderAnnotations() {
   const wrap = document.getElementById("chartAnnotations");
   wrap.innerHTML = "";
@@ -1144,12 +1191,7 @@ function renderAnnotations() {
   const stepW = (chartArea.right - chartArea.left) / (n - 1);
 
   events.forEach((ev) => {
-    let idx = -1;
-    if (currentRange === "monthly" && ev.date.length === 7) {
-      idx = keys.indexOf(ev.date);
-    } else if (currentRange === "yearly") {
-      idx = keys.indexOf(ev.date.split("-")[0]);
-    }
+    const idx = eventChartIndex(ev, keys, currentRange);
     if (idx < 0 || idx >= n) return;
     const cfg = typeConfig[ev.type] || typeConfig.acc;
     const x = chartArea.left + idx * stepW;
@@ -1586,6 +1628,7 @@ async function initApp() {
   await loadAppConfig();
 
   if (portfolioMode) {
+    seedPortfolioEvents(true);
     setAppLoading(true, "Loading community data…", "Fetching illustrative demo dataset");
     try {
       await fetchAndApplyDemo();
