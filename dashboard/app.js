@@ -41,16 +41,16 @@ const CHART_WINDOWS = {
 let dataSource = "demo";
 let portfolioMode = false;
 let embedMode = false;
-let appConfig = { repoUrl: "", contactEmail: "" };
+let appConfig = { repoUrl: "https://github.com/kristenwagner0/telegram-sentiment-tracker", contactEmail: "" };
 let rawMessages = [];
 let chartKeys = { monthly: [], weekly: [], yearly: [] };
 let isTranslating = false;
 const translationCache = JSON.parse(localStorage.getItem("st_translations_v2") || "{}");
-const COMPLAINERS_DEMO_PW = "NakamotoStacks2026";
+const COMPLAINERS_DEMO_PW = "CommunityReview2026";
 const COMPLAINERS_UNLOCK_KEY = "st_complainers_unlocked";
 
 let events = JSON.parse(localStorage.getItem("st_events") || "null") || [
-  { id: 1, date: "2025-02", label: "Bot outage (3 days)", type: "neg" },
+  { id: 1, date: "2025-02", label: "Testnet maintenance (3 days)", type: "neg" },
   { id: 2, date: "2025-05", label: "Community AMA session", type: "pos" },
   { id: 3, date: "2025-08", label: "New announcement format", type: "neu" },
 ];
@@ -122,14 +122,14 @@ function updateModeDesc(modeOverride) {
   if (m === "upload") {
     text = "Run sentiment analysis locally · this hosted page is the viewer only";
   } else if (dataSource === "portfolio") {
-    text = `Portfolio demo · redacted community data · ${summary.total.toLocaleString()} messages`;
+    text = `Illustrative demo · fictional Helix Protocol · ${summary.total.toLocaleString()} synthetic messages`;
   } else if (dataSource === "sheet") {
     text = "Live data from Google Sheets · refresh to update";
   } else if (dataSource === "csv") {
     text = `Your CSV · ${summary.total.toLocaleString()} messages loaded in this browser session`;
   } else {
     text = portfolioMode
-      ? "Portfolio demo · explore the dashboard below"
+      ? "Illustrative demo · fictional Helix Protocol community · source on GitHub"
       : "Demo preview · connect Google Sheets in the sidebar for live data";
   }
   document.getElementById("modeDescText").textContent = text;
@@ -140,7 +140,7 @@ function applyPortfolioNav() {
   document.getElementById("nav-upload")?.style.setProperty("display", "none");
   document.getElementById("nav-gettool")?.style.setProperty("display", "");
   document.querySelector(".mode-pill")?.style.setProperty("display", embedMode ? "none" : "");
-  const repo = appConfig.repoUrl || "https://github.com";
+  const repo = appConfig.repoUrl || "https://github.com/kristenwagner0/telegram-sentiment-tracker";
   const repoEl = document.getElementById("gettoolRepoLink");
   if (repoEl) {
     repoEl.href = repo;
@@ -152,13 +152,22 @@ function applyPortfolioNav() {
       ? `<a href="mailto:${appConfig.contactEmail}" style="color:var(--accent)">${appConfig.contactEmail}</a>`
       : "reach out via my resume site";
   }
+  document.getElementById("portfolioBanner")?.classList.add("visible");
+  document.getElementById("sidebarGithub")?.style.setProperty("display", "");
+  for (const id of ["sidebarGithubLink", "bannerGithubLink"]) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.href = repo;
+    }
+  }
+  document.getElementById("nav-messages")?.style.setProperty("display", "none");
 }
 
 function setDataBadge(kind) {
   const badge = document.getElementById("sheetStatusBadge");
   if (!badge) return;
   const map = {
-    portfolio: ["Portfolio demo", "live"],
+    portfolio: ["Illustrative demo", "live"],
     sheet: ["Live", "live"],
     csv: ["Your data", "live"],
     demo: ["Demo", "demo"],
@@ -411,8 +420,8 @@ function parseAndApplyCsv(text) {
 }
 
 async function fetchAndApplyDemo() {
-  showSheetStatus("Loading portfolio demo…", "loading");
-  setAppLoading(true, "Loading community data…", "Fetching redacted demo dataset");
+  showSheetStatus("Loading illustrative demo…", "loading");
+  setAppLoading(true, "Loading community data…", "Fetching illustrative demo dataset");
   const res = await fetch("/api/demo");
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -423,7 +432,7 @@ async function fetchAndApplyDemo() {
   dataSource = "portfolio";
   setDataBadge("portfolio");
   updateModeDesc("community");
-  showSheetStatus(`Portfolio demo · ${count.toLocaleString()} redacted messages loaded`, "ok");
+  showSheetStatus(`Illustrative demo · ${count.toLocaleString()} synthetic messages loaded`, "ok");
   navigate("dashboard");
 }
 
@@ -1022,7 +1031,8 @@ async function renderComplaints() {
 }
 
 function complainersAreProtected() {
-  // Lock names for any live/real dataset (local Sheets, CSV, or hosted demo)
+  // Synthetic portfolio demo uses fictional names — no lock needed
+  if (portfolioMode || dataSource === "portfolio") return false;
   return dataSource !== "demo";
 }
 
@@ -1467,7 +1477,7 @@ async function initApp() {
   await loadAppConfig();
 
   if (portfolioMode) {
-    setAppLoading(true, "Loading community data…", "Fetching redacted demo dataset");
+    setAppLoading(true, "Loading community data…", "Fetching illustrative demo dataset");
     try {
       await fetchAndApplyDemo();
     } catch (e) {

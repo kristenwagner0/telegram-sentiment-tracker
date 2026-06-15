@@ -16,7 +16,7 @@ Parse Telegram Desktop `result.json` exports, score message sentiment (Korean or
 
 If macOS blocks the launcher: right-click → **Open** → **Open** (one-time).
 
-See [PORTFOLIO.md](PORTFOLIO.md) for a 2-minute demo script.
+See [docs/PORTFOLIO.md](docs/PORTFOLIO.md) for a 2-minute demo script.
 
 ## Quick start (Terminal)
 
@@ -187,7 +187,8 @@ telegram-sentiment-tracker/
   telegram_sentiment.py   # main analysis CLI
   refresh_keywords.py     # recompute complaint keywords on CSV
   translate_output.py     # add text_en column
-  redact_for_demo.py      # optional: pseudonymize before public demo
+  generate_synthetic_demo.py  # fictional portfolio demo CSV
+  redact_for_demo.py      # optional: pseudonymize real data (local only)
   calibrate_models.py     # compare FinBert vs NSMC
   sheets_sync.py          # Google Sheets auto-append
   docs/                   # deploy + portfolio guides
@@ -206,14 +207,13 @@ telegram-sentiment-tracker/
 
 Host the dashboard for your resume site (iframe embed on a static portfolio page):
 
-### 1. Redact usernames before publishing
+### 1. Generate synthetic demo data (recommended for public deploy)
 
 ```bash
-python redact_for_demo.py -i output/full_history_v4.csv --dry-run   # spot-check quotes
-python redact_for_demo.py -i output/full_history_v4.csv -o output/demo_public.csv
+python generate_synthetic_demo.py
 ```
 
-Import `output/demo_public.csv` into a **separate** Google Sheet (view-only). Never upload the raw CSV.
+Import `output/synthetic_demo.csv` into a **separate** Google Sheet (view-only). See [docs/SYNTHETIC_DEMO.md](docs/SYNTHETIC_DEMO.md). Never upload real community exports.
 
 ### 2. Deploy dashboard only (no ML on server)
 
@@ -223,8 +223,8 @@ On [Render.com](https://render.com), create a **Web Service**:
 - **Start:** `gunicorn server:app --bind 0.0.0.0:$PORT --timeout 120`
 - **Environment variables** (see `.env.example`):
   - `PORTFOLIO_MODE=1`
-  - `DEMO_SHEET_URL` — export URL of your redacted sheet (server-only, not shown in UI)
-  - `GITHUB_REPO_URL` — link on the Get the tool page
+  - `DEMO_SHEET_URL` — export URL of your synthetic demo sheet (server-only)
+  - `GITHUB_REPO_URL` — https://github.com/kristenwagner0/telegram-sentiment-tracker
   - `CONTACT_EMAIL` — optional
 
 ### 3. Embed on your resume site
@@ -240,4 +240,4 @@ On [Render.com](https://render.com), create a **Web Service**:
 ></iframe>
 ```
 
-Portfolio mode auto-loads redacted data via `/api/demo`. The **Get the tool** sidebar page explains how others can run analysis locally or drop a pre-processed CSV (parsed in-browser, free).
+Portfolio mode auto-loads synthetic data via `/api/demo` and shows a GitHub link in the sidebar. The **Get the tool** page explains how to clone the repo and run analysis locally.

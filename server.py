@@ -16,6 +16,11 @@ DASHBOARD = ROOT / "dashboard"
 app = Flask(__name__)
 
 
+def portfolio_mode() -> bool:
+    return os.environ.get("PORTFOLIO_MODE", "").lower() in ("1", "true", "yes")
+
+
+
 def normalize_sheet_url(url: str) -> str:
     """Convert edit/share links to CSV export URLs."""
     if "/export?" in url or "/pub?" in url or "output=csv" in url:
@@ -72,7 +77,7 @@ def index():
 @app.route("/api/config")
 def app_config():
     return jsonify({
-        "portfolioMode": os.environ.get("PORTFOLIO_MODE", "").lower() in ("1", "true", "yes"),
+        "portfolioMode": portfolio_mode(),
         "repoUrl": os.environ.get("GITHUB_REPO_URL", ""),
         "contactEmail": os.environ.get("CONTACT_EMAIL", ""),
     })
@@ -97,6 +102,8 @@ def demo_data():
 
 @app.route("/api/sheet")
 def sheet_proxy():
+    if portfolio_mode():
+        return jsonify({"error": "Sheet proxy is disabled in portfolio demo mode"}), 403
     raw_url = request.args.get("url", "").strip()
     content, err = fetch_sheet_csv(raw_url)
     if err:

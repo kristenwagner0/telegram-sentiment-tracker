@@ -8,14 +8,14 @@
 
 1. **Dashboard** — summary cards, real complaint quotes, recent messages
 2. **Trends** — sentiment over time with time-range pills (3 months, 1 year, etc.)
-3. **Complaints** — weekly themes, most active voices (password-protected names)
+3. **Complaints** — weekly themes and most active voices (fictional members)
 4. **English toggle** — live translation for non-Korean readers
 5. **Get the tool** (hosted demo) — how to run locally or load your own CSV
 
 ## Live demo script (2 minutes)
 
 1. Open the hosted demo (or double-click `Open Dashboard.command` locally)
-2. "This analyzes a Telegram community — ~135k messages, usernames redacted for the public demo"
+2. "This is an illustrative demo — ~135k synthetic messages for a fictional Helix Protocol community. Real analysis runs locally from GitHub."
 3. Show Trends → weekly view at 6 months, toggle net sentiment line
 4. Complaints → real negative message quotes for a spike week
 5. "Sentiment runs locally with HuggingFace KoELECTRA; the website is the viewer"
@@ -24,7 +24,7 @@
 
 See [DEPLOY.md](DEPLOY.md) for full steps:
 
-1. Point `DEMO_SHEET_URL` at your existing Google Sheet (or optional redact + upload)
+1. Generate synthetic CSV → import to Google Sheet → set `DEMO_SHEET_URL` (see SYNTHETIC_DEMO.md)
 2. Deploy `server.py` on Render (free tier) with `PORTFOLIO_MODE=1`
 3. iframe embed on your static resume site with `?embed=1`
 

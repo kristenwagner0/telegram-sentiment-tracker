@@ -177,6 +177,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .msg-search-status{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);min-height:18px;margin-bottom:10px}
 .msg-search-status.loading{color:var(--accent)}
 .msg-search-spinner{width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:st-spin .7s linear infinite;flex-shrink:0}
+
+.portfolio-banner{display:none;align-items:center;justify-content:space-between;gap:12px;padding:10px 24px;background:var(--accent-bg);border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);flex-shrink:0}
+.portfolio-banner.visible{display:flex}
+.portfolio-banner strong{color:var(--text);font-weight:600}
+.portfolio-banner a{color:var(--accent);text-decoration:none;font-weight:500}
+.portfolio-banner a:hover{text-decoration:underline}
+.sidebar-github{margin-top:12px;padding:10px 12px;border-top:1px solid var(--border)}
+.sidebar-github a{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);text-decoration:none}
+.sidebar-github a:hover{color:var(--accent)}
 @media(max-width:900px){.sidebar{display:none}.summary-row,.three-col{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
 </style>
 </head>
@@ -191,13 +200,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
   <div class="nav-item active" data-nav="dashboard"><span class="nav-icon"></span> Dashboard</div>
   <div class="nav-item" data-nav="trends"><span class="nav-icon"></span> Trends</div>
   <div class="nav-item" data-nav="complaints"><span class="nav-icon"></span> Complaints <span class="nav-badge" id="complaintBadge">5</span></div>
-  <div class="nav-item" data-nav="messages"><span class="nav-icon"></span> Messages</div>
+  <div class="nav-item" data-nav="messages" id="nav-messages"><span class="nav-icon"></span> Messages</div>
   <div class="sidebar-section">Data</div>
   <div class="nav-item" data-nav="sheets" id="nav-sheets"><span class="nav-icon"></span> Google Sheets</div>
   <div class="nav-item" data-nav="upload" id="nav-upload"><span class="nav-icon"></span> Upload export</div>
   <div class="nav-item" data-nav="gettool" id="nav-gettool" style="display:none"><span class="nav-icon"></span> Get the tool</div>
   <div class="sidebar-section">Settings</div>
   <div class="nav-item" data-nav="settings"><span class="nav-icon"></span> Settings</div>
+  <div class="sidebar-github" id="sidebarGithub" style="display:none">
+    <a id="sidebarGithubLink" href="https://github.com/kristenwagner0/telegram-sentiment-tracker" target="_blank" rel="noopener">View source on GitHub ↗</a>
+  </div>
   <div class="lang-section">
     <div class="lang-label">Display language</div>
     <div class="lang-toggle">
@@ -221,6 +233,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
       </div>
       <span class="status-badge demo" id="sheetStatusBadge">Demo</span>
     </div>
+  </div>
+  <div class="portfolio-banner" id="portfolioBanner">
+    <span><strong>Illustrative demo</strong> · fictional Helix Protocol community · not affiliated with any real project</span>
+    <a id="bannerGithubLink" href="https://github.com/kristenwagner0/telegram-sentiment-tracker" target="_blank" rel="noopener">Source on GitHub ↗</a>
   </div>
   <div class="mode-desc"><div class="dot"></div><span id="modeDescText">Demo preview · connect Google Sheets for live data</span></div>
 
@@ -440,7 +456,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
   </div>
 </div>
 
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 <script>
 const origSetWeek = setWeek;
 setWeek = function(i) { origSetWeek(i); const w2=document.getElementById('weekSelect2'); if(w2) w2.value=i; renderComplaints2(); };

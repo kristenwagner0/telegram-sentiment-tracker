@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- [ ] Google Sheet ready (existing Stacks sheet is fine) — see [docs/SHEETS_PUBLISH.md](SHEETS_PUBLISH.md) if uploading fresh data
+- [ ] Synthetic demo sheet ready — see [docs/SYNTHETIC_DEMO.md](SYNTHETIC_DEMO.md)
 - [ ] Project pushed to a GitHub repository
 
 ## Deploy on Render (free tier)
@@ -13,7 +13,7 @@
 2. Go to [Render Dashboard](https://dashboard.render.com) → **New → Blueprint**
 3. Connect the repo → Render reads [`render.yaml`](render.yaml)
 4. When prompted, set secret env vars:
-   - `DEMO_SHEET_URL` — redacted sheet export/edit URL
+   - `DEMO_SHEET_URL` — synthetic demo sheet URL (see SYNTHETIC_DEMO.md)
    - `GITHUB_REPO_URL` — e.g. `https://github.com/yourusername/telegram-sentiment-tracker`
    - `CONTACT_EMAIL` — optional, shown on Get the tool page
 5. Click **Apply** → wait for deploy (~2 min)
@@ -31,17 +31,17 @@
 | Key | Value |
 |---|---|
 | `PORTFOLIO_MODE` | `1` |
-| `DEMO_SHEET_URL` | Your redacted Google Sheet URL |
+| `DEMO_SHEET_URL` | Synthetic demo Google Sheet URL |
 | `GITHUB_REPO_URL` | Your GitHub repo URL |
 | `CONTACT_EMAIL` | Your email (optional) |
 
 ## Verify deployment
 
 1. Open `https://YOUR-SERVICE.onrender.com`
-2. Loading overlay → redacted data loads (not fake demo numbers)
-3. Badge: **Portfolio demo**
+2. Loading overlay → synthetic Helix Protocol demo loads
+3. Banner: **Illustrative demo** · GitHub link visible
 4. Trends defaults to **Weekly · 1 year**
-5. Complaints → Repeat complainers requires password (see app config)
+5. Complaints → sample themes from fictional negative messages
 
 ## Embed on your resume site
 
