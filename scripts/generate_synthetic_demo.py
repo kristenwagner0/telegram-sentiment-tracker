@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Generate a fully synthetic Telegram sentiment CSV for portfolio demos."""
+"""
+Generate a fully synthetic Telegram sentiment CSV for public portfolio demos.
+
+Purpose: Create fictional Helix Protocol community data (~135k rows) for resume embed.
+         Never uses real Telegram exports. Output goes to output/synthetic_demo.csv.
+Deploy:  Local only — import the CSV to Google Sheets and set DEMO_SHEET_URL on Render.
+"""
 
 from __future__ import annotations
 
@@ -277,7 +283,7 @@ def generate(template: Path, output: Path, seed: int, max_rows: int | None = Non
 
 
 def main() -> None:
-    root = Path(__file__).parent
+    root = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description="Generate synthetic portfolio demo CSV")
     parser.add_argument("-t", "--template", default=str(root / "output" / "full_history_v4.csv"))
     parser.add_argument("-o", "--output", default=str(root / "output" / "synthetic_demo.csv"))

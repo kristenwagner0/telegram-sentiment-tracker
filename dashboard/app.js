@@ -1,4 +1,8 @@
-/* SentimentTrack — navigation, Google Sheets CSV, chart rendering */
+/**
+ * SentimentTrack dashboard client — navigation, charts, CSV parsing, Google Sheets load.
+ * Purpose: Interactive UI for community sentiment analytics; runs entirely in the browser.
+ * Deploy:  Served as static files by server.py (local + Render). No build step required.
+ */
 
 const COLORS = {
   pos: "#5E8B7E",
@@ -363,9 +367,10 @@ function applyPortfolioNav() {
   document.querySelector(".mode-pill")?.style.setProperty("display", embedMode ? "none" : "");
   const repo = appConfig.repoUrl || "https://github.com/kristenwagner0/telegram-sentiment-tracker";
   const repoEl = document.getElementById("gettoolRepoLink");
-  if (repoEl) {
-    repoEl.href = repo;
-    repoEl.textContent = repo.replace(/^https:\/\//, "");
+  if (repoEl) repoEl.href = repo;
+  const cloneEl = document.getElementById("gettoolCloneCmd");
+  if (cloneEl) {
+    cloneEl.textContent = `git clone ${repo}.git\ncd telegram-sentiment-tracker`;
   }
   const contactEl = document.getElementById("gettoolContact");
   if (contactEl) {
@@ -380,6 +385,10 @@ function applyPortfolioNav() {
     if (el) {
       el.href = repo;
     }
+  }
+  const guideEl = document.getElementById("gettoolGuideLink");
+  if (guideEl) {
+    guideEl.href = `${repo.replace(/\/$/, "")}/blob/main/docs/GETTING_STARTED.md`;
   }
   document.getElementById("nav-messages")?.style.setProperty("display", "none");
   buildMobileNav();

@@ -1,11 +1,15 @@
 # Telegram Sentiment Tracker
 
+<!-- Purpose: Main project documentation — local setup, analysis CLI, dashboard, and Render deploy. -->
+
 Parse Telegram Desktop `result.json` exports, score message sentiment (Korean or English) with offline HuggingFace models, extract weekly complaint keywords, and explore results in a **visual dashboard** — with optional Google Sheets sync.
+
+**New here?** Read the full walkthrough: **[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)** — download from GitHub, export Telegram data, install, analyze, and open the dashboard step by step.
 
 ## Open the dashboard (matches your Claude design)
 
 1. Go to this folder in **Finder**
-2. **Double-click `Open Dashboard.command`**
+2. **Double-click `bin/Open Dashboard.command`**
 3. Your browser opens **SentimentTrack** — dark UI, left nav, charts (same look as your Claude HTML)
 
 **All sidebar links are clickable:** Dashboard · Trends · Complaints · Messages · Google Sheets · Upload export · Settings
@@ -75,12 +79,12 @@ python telegram_sentiment.py -i exports/my_chat/result.json --batch-size 8
 1. Run the script → get `output/full_history_v2.csv`
 2. Optional — refresh complaint keywords (fast, no ML re-run):
    ```bash
-   python refresh_keywords.py -i output/full_history_v2.csv -o output/full_history_v3.csv
+   python scripts/refresh_keywords.py -i output/full_history_v2.csv -o output/full_history_v3.csv
    ```
 3. Optional — add English translations for recent messages:
    ```bash
    pip install deep-translator
-   python translate_output.py -i output/full_history_v3.csv -o output/full_history_v3_en.csv
+   python scripts/translate_output.py -i output/full_history_v3.csv -o output/full_history_v3_en.csv
    ```
 4. Google Sheets → **File → Import → Upload** the CSV
 5. **Share** → Anyone with the link → Viewer
@@ -159,7 +163,7 @@ The default model is now **KoELECTRA-NSMC**, trained on informal Naver movie rev
 Compare old vs new model on 200 sample messages (~2 min after models are cached):
 
 ```bash
-python calibrate_models.py -i "/path/to/result.json" --samples 200
+python scripts/calibrate_models.py -i "/path/to/result.json" --samples 200
 ```
 
 ### Re-run with the improved model
@@ -181,24 +185,29 @@ Use `--model finbert` only if you want the old financial model for comparison.
 
 ```
 telegram-sentiment-tracker/
-  Open Dashboard.command  # double-click to run locally
+  bin/                    # macOS launchers (double-click in Finder)
+    Open Dashboard.command
+    Push to GitHub.command
+    Start Deploy.command
   server.py               # Flask server (local + Render)
-  dashboard/              # SentimentTrack web UI
   telegram_sentiment.py   # main analysis CLI
-  refresh_keywords.py     # recompute complaint keywords on CSV
-  translate_output.py     # add text_en column
-  generate_synthetic_demo.py  # fictional portfolio demo CSV
-  redact_for_demo.py      # optional: pseudonymize real data (local only)
-  calibrate_models.py     # compare FinBert vs NSMC
   sheets_sync.py          # Google Sheets auto-append
+  dashboard/              # SentimentTrack web UI
+  scripts/                # optional local utilities (not deployed)
+    generate_synthetic_demo.py
+    refresh_keywords.py
+    translate_output.py
+    redact_for_demo.py
+    calibrate_models.py
   docs/                   # deploy + portfolio guides
+    GETTING_STARTED.md    # full download → export → run walkthrough
   portfolio/              # resume iframe snippet
   exports/                # Telegram JSON exports (gitignored)
   output/                 # latest CSV output (gitignored)
   archive/                # old Streamlit app + superseded CSVs
   requirements.txt        # full analysis stack
   requirements-dashboard.txt  # Render deploy only
-  render.yaml / Procfile
+  render.yaml             # Render Blueprint
 ```
 
 ## Portfolio demo hosting (Render.com)
@@ -210,7 +219,7 @@ Host the dashboard for your resume site (iframe embed on a static portfolio page
 ### 1. Generate synthetic demo data (recommended for public deploy)
 
 ```bash
-python generate_synthetic_demo.py
+python scripts/generate_synthetic_demo.py
 ```
 
 Import `output/synthetic_demo.csv` into a **separate** Google Sheet (view-only). See [docs/SYNTHETIC_DEMO.md](docs/SYNTHETIC_DEMO.md). Never upload real community exports.

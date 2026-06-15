@@ -1,13 +1,15 @@
 # Publish redacted demo data to Google Sheets
 
+<!-- Purpose: Legacy path to pseudonymize real CSVs for public Sheets (prefer synthetic demo instead). -->
+
 Run this **once** before deploying to Render. Do not upload raw `full_history_v4.csv`.
 
 ## 1. Generate redacted CSV
 
 ```bash
 cd telegram-sentiment-tracker
-python redact_for_demo.py -i output/full_history_v4.csv --dry-run   # spot-check
-python redact_for_demo.py -i output/full_history_v4.csv -o output/demo_public.csv
+python scripts/redact_for_demo.py -i output/full_history_v4.csv --dry-run   # spot-check
+python scripts/redact_for_demo.py -i output/full_history_v4.csv -o output/demo_public.csv
 ```
 
 Output: `output/demo_public.csv` (~33 MB, 134k rows, pseudonymized senders).

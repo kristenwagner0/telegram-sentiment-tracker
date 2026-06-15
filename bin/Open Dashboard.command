@@ -1,5 +1,7 @@
 #!/bin/bash
-cd "$(dirname "$0")"
+# Purpose: Start the SentimentTrack dashboard locally in portfolio mode and open the browser.
+# Usage:   Double-click in Finder, or run from Terminal. Keeps server running until closed.
+cd "$(dirname "$0")/.."
 
 PYTHON=".venv/bin/python"
 

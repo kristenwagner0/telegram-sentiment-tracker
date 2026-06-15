@@ -1,6 +1,10 @@
 """
 Telegram Sentiment Preprocessor
 ================================
+Purpose: Parse Telegram result.json exports, run offline HuggingFace sentiment
+         analysis (Korean or English), extract weekly complaint keywords, output CSV.
+Deploy:  Local only — ML models run on your machine, not on Render.
+
 Parses a Telegram result.json export, runs offline HuggingFace sentiment
 analysis (Korean or English), extracts complaint keywords per week, and
 outputs a CSV ready to paste into Google Sheets.

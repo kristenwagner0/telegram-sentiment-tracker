@@ -1,4 +1,10 @@
-"""Serve the SentimentTrack dashboard and proxy Google Sheets CSV (avoids browser CORS)."""
+"""
+Flask server for SentimentTrack — serves the dashboard UI and API routes.
+
+Purpose: Host the web dashboard locally and on Render; proxy Google Sheets CSV
+         (avoids browser CORS) and serve the synthetic portfolio demo.
+Deploy:  Required on Render (gunicorn server:app). Not used for offline ML analysis.
+"""
 
 from __future__ import annotations
 

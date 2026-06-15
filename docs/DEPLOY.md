@@ -1,5 +1,7 @@
 # Deploy SentimentTrack for portfolio embed
 
+<!-- Purpose: Step-by-step Render.com deploy and resume iframe embed instructions. -->
+
 ## Prerequisites
 
 - [ ] Synthetic demo sheet ready — see [docs/SYNTHETIC_DEMO.md](SYNTHETIC_DEMO.md)

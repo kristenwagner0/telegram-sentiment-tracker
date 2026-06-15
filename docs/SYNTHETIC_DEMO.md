@@ -1,12 +1,14 @@
 # Synthetic portfolio demo data
 
+<!-- Purpose: How to generate fictional demo CSV and publish it to Google Sheets for Render. -->
+
 The public hosted demo uses **entirely fictional data** — not real Telegram messages or any real crypto project.
 
 ## Generate the CSV
 
 ```bash
 cd telegram-sentiment-tracker
-python generate_synthetic_demo.py
+python scripts/generate_synthetic_demo.py
 ```
 
 Output: `output/synthetic_demo.csv` (~135k rows, Mar 2020 – Jun 2026 timeline).
@@ -18,7 +20,7 @@ Output: `output/synthetic_demo.csv` (~135k rows, Mar 2020 – Jun 2026 timeline)
 Optional small sample for inspection:
 
 ```bash
-python generate_synthetic_demo.py -o demo/synthetic_sample.csv --max-rows 500
+python scripts/generate_synthetic_demo.py -o demo/synthetic_sample.csv --max-rows 500
 ```
 
 ## Publish to Google Sheets (for Render)

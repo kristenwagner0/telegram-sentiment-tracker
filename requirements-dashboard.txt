@@ -1,3 +1,5 @@
+# Render deploy only — lightweight server deps, no ML stack.
+# Used by render.yaml buildCommand. Keeps free-tier deploy fast and small.
 flask
 requests
 deep-translator

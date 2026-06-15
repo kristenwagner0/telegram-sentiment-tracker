@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
-"""Recompute top_complaints on an existing CSV (no sentiment re-run)."""
+"""
+Recompute top_complaints column on an existing CSV without re-running sentiment ML.
+
+Purpose: Refresh weekly complaint keywords after tweaking TF-IDF logic or fixing labels.
+Deploy:  Local only. Fast post-processing step — no model download required.
+"""
 
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import pandas as pd
+
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
 from telegram_sentiment import build_weekly_keywords
 

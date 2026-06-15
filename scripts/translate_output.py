@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Add text_en column to an analysis CSV using Google Translate (deep-translator)."""
+"""
+Add text_en column to an analysis CSV via Google Translate (deep-translator).
+
+Purpose: Pre-translate Korean messages for English readers in the dashboard Messages tab.
+Deploy:  Local only. The hosted dashboard can also translate live via /api/translate.
+"""
 
 from __future__ import annotations
 

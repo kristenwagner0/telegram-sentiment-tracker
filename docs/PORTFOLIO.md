@@ -1,5 +1,7 @@
 # Portfolio talking points
 
+<!-- Purpose: Demo script, mobile notes, and talking points for resume interviews. -->
+
 ## One-liner
 
 > I built a community sentiment intelligence tool that turns raw Telegram chat exports into weekly mood trends, complaint themes, and escalation signals — so community teams can spot issues before they blow up.
@@ -14,7 +16,7 @@
 
 ## Live demo script (2 minutes)
 
-1. Open the hosted demo (or double-click `Open Dashboard.command` locally)
+1. Open the hosted demo (or double-click `bin/Open Dashboard.command` locally)
 2. "This is an illustrative demo — ~135k synthetic messages for a fictional Helix Protocol community. Real analysis runs locally from GitHub."
 3. Show Trends → weekly view at 6 months, toggle net sentiment line
 4. Complaints → real negative message quotes for a spike week

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Redact usernames and PII from sentiment CSV before publishing a portfolio demo."""
+"""
+Redact usernames and PII from a real sentiment CSV before any public upload.
+
+Purpose: Pseudonymize real analysis output if you cannot use synthetic demo data.
+Deploy:  Local only. Prefer scripts/generate_synthetic_demo.py for portfolio hosting.
+"""
 
 from __future__ import annotations
 

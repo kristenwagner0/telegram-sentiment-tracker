@@ -1,4 +1,6 @@
-# Render Blueprint — SentimentTrack portfolio demo
+# Render Blueprint — deploys SentimentTrack as a free-tier web service.
+# Purpose: One-click deploy of server.py + dashboard/ for portfolio iframe embed.
+# Set DEMO_SHEET_URL, GITHUB_REPO_URL, and CONTACT_EMAIL in the Render dashboard.
 # Docs: https://render.com/docs/blueprint-spec
 services:
   - type: web

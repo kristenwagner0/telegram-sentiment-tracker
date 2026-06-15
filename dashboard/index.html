@@ -1,3 +1,5 @@
+<!-- SentimentTrack dashboard shell — dark UI layout, panels, and inline styles.
+     Purpose: Static HTML/CSS structure; logic lives in app.js, data from server.py API. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -168,6 +170,27 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .sheet-input{width:100%;padding:10px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;margin:10px 0}
 .sheet-steps{font-size:12px;color:var(--text2);line-height:1.8;margin:12px 0}
 .sheet-steps ol{padding-left:18px}
+.howto-guide{margin:16px 0 4px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--card2)}
+.howto-guide-head{padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text)}
+.howto-guide-sub{font-size:10px;font-weight:400;color:var(--text3);margin-top:2px}
+.howto-step{border-bottom:1px solid var(--border)}
+.howto-step:last-child{border-bottom:none}
+.howto-step summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text);user-select:none;transition:background .15s}
+.howto-step summary::-webkit-details-marker{display:none}
+.howto-step summary::after{content:"+";font-size:14px;font-weight:400;color:var(--text3);flex-shrink:0;line-height:1}
+.howto-step[open] summary::after{content:"−"}
+.howto-step summary:hover{background:rgba(255,255,255,.03)}
+.howto-step[open] summary{background:var(--accent-bg)}
+.howto-step-num{font-size:10px;font-weight:600;color:var(--accent);letter-spacing:.04em;text-transform:uppercase;min-width:42px}
+.howto-step-title{flex:1}
+.howto-body{padding:0 14px 14px 14px;font-size:11px;color:var(--text2);line-height:1.65}
+.howto-body p{margin:0 0 8px}
+.howto-body ul,.howto-body ol{margin:6px 0 8px;padding-left:18px}
+.howto-body li{margin:3px 0}
+.howto-body code{font-size:10px;background:var(--card);padding:2px 5px;border-radius:4px;border:1px solid var(--border2);color:var(--text)}
+.howto-cmd{display:block;margin:8px 0;padding:10px 12px;background:var(--card);border:1px solid var(--border2);border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:var(--text);line-height:1.5;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.howto-note{font-size:10px;color:var(--text3);margin-top:6px}
+.gettool-card{max-width:720px}
 .sheet-status{font-size:11px;margin-top:8px;padding:8px 10px;border-radius:8px}
 .sheet-status.ok{background:var(--pos-bg);color:var(--pos)}
 .sheet-status.error{background:var(--neg-bg);color:var(--neg)}
@@ -400,7 +423,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
           <strong>Setup steps:</strong>
           <ol>
             <li>Run <code>telegram_sentiment.py</code> on your Telegram export</li>
-            <li>Optional: <code>refresh_keywords.py</code> and <code>translate_output.py</code> for better complaints + English</li>
+            <li>Optional: <code>scripts/refresh_keywords.py</code> and <code>scripts/translate_output.py</code> for better complaints + English</li>
             <li>Import the CSV into Google Sheets · Share as "Anyone with the link"</li>
             <li>Paste the sheet URL above and click Connect</li>
           </ol>
@@ -410,18 +433,121 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 
     
     <div id="panel-gettool" class="panel">
-      <div class="card sheets-card">
+      <div class="card sheets-card gettool-card">
         <div class="card-title" style="margin-bottom:4px">Use SentimentTrack on your own data</div>
-        <div class="chart-sub" style="margin-bottom:14px">Sentiment analysis runs on your computer (free). This hosted site is the interactive viewer.</div>
-        <div class="sheet-steps">
-          <strong>Run locally:</strong>
-          <ol>
-            <li>Export your Telegram chat as JSON from Telegram Desktop</li>
-            <li>Clone the repo: <a id="gettoolRepoLink" href="#" target="_blank" rel="noopener" style="color:var(--accent)">GitHub</a></li>
-            <li>Run <code>python telegram_sentiment.py -i exports/your_chat/result.json --lang ko</code></li>
-            <li>Open the dashboard locally, or drop your output CSV below</li>
-          </ol>
+        <div class="chart-sub" style="margin-bottom:4px">Sentiment analysis runs on your computer (free). This hosted page is the interactive viewer only.</div>
+
+        <div class="howto-guide">
+          <div class="howto-guide-head">
+            How to run it yourself
+            <div class="howto-guide-sub">Expand each step · full guide on <a id="gettoolGuideLink" href="https://github.com/kristenwagner0/telegram-sentiment-tracker/blob/main/docs/GETTING_STARTED.md" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">GitHub ↗</a></div>
+          </div>
+
+          <details class="howto-step" open>
+            <summary><span class="howto-step-num">Step 1</span><span class="howto-step-title">Download from GitHub</span></summary>
+            <div class="howto-body">
+              <p>Get the project onto your machine using Git or a ZIP download.</p>
+              <p><strong>Option A — Git clone</strong></p>
+              <code class="howto-cmd" id="gettoolCloneCmd">git clone https://github.com/kristenwagner0/telegram-sentiment-tracker.git
+cd telegram-sentiment-tracker</code>
+              <p><strong>Option B — No Git</strong></p>
+              <ul>
+                <li>Open <a id="gettoolRepoLink" href="https://github.com/kristenwagner0/telegram-sentiment-tracker" target="_blank" rel="noopener" style="color:var(--accent)">the repository</a></li>
+                <li>Click <strong>Code → Download ZIP</strong></li>
+                <li>Unzip and open Terminal in that folder</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="howto-step">
+            <summary><span class="howto-step-num">Step 2</span><span class="howto-step-title">Install Python &amp; dependencies</span></summary>
+            <div class="howto-body">
+              <p>You need <strong>Python 3.9+</strong>. Check with <code>python3 --version</code>.</p>
+              <p><strong>macOS / Linux</strong></p>
+              <code class="howto-cmd">python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt</code>
+              <p><strong>Windows (PowerShell)</strong></p>
+              <code class="howto-cmd">py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install --upgrade pip
+pip install -r requirements.txt</code>
+              <p class="howto-note">First analysis run downloads an AI model (~250–500 MB) to <code>~/.cache/huggingface/</code>. Dashboard-only install: <code>pip install -r requirements-dashboard.txt</code></p>
+            </div>
+          </details>
+
+          <details class="howto-step">
+            <summary><span class="howto-step-num">Step 3</span><span class="howto-step-title">Export your Telegram chat</span></summary>
+            <div class="howto-body">
+              <p>You must use <strong>Telegram Desktop</strong> — the phone app cannot export JSON.</p>
+              <ol>
+                <li>Install from <strong>desktop.telegram.org</strong> and sign in</li>
+                <li>Open the group or channel you want to analyze</li>
+                <li>Menu <strong>⋮ → Export chat history</strong></li>
+                <li>Format: <strong>JSON</strong> (required)</li>
+                <li>Uncheck photos/videos for a faster export</li>
+                <li>Save — large chats may take 10–30+ minutes</li>
+              </ol>
+              <p>Copy <code>result.json</code> into the project:</p>
+              <code class="howto-cmd">mkdir -p exports/my_community
+cp /path/to/Telegram\ Export/.../result.json exports/my_community/result.json</code>
+              <p class="howto-note">Files in <code>exports/</code> stay on your machine and are never uploaded to GitHub.</p>
+            </div>
+          </details>
+
+          <details class="howto-step">
+            <summary><span class="howto-step-num">Step 4</span><span class="howto-step-title">Run sentiment analysis</span></summary>
+            <div class="howto-body">
+              <p>The ML model runs <strong>locally</strong> — your messages are not sent to any server.</p>
+              <p><strong>Korean chat</strong></p>
+              <code class="howto-cmd">python telegram_sentiment.py -i exports/my_community/result.json --lang ko</code>
+              <p><strong>English chat</strong></p>
+              <code class="howto-cmd">python telegram_sentiment.py -i exports/my_community/result.json --lang en</code>
+              <p>Output is written to <code>output/full_history.csv</code> (or <code>output/week_YYYY-MM-DD.csv</code> for single-week exports).</p>
+              <p class="howto-note">Sanity check without downloading the model: add <code>--dry-run</code>. Low memory? add <code>--batch-size 8</code>.</p>
+            </div>
+          </details>
+
+          <details class="howto-step">
+            <summary><span class="howto-step-num">Step 5</span><span class="howto-step-title">Open the dashboard locally</span></summary>
+            <div class="howto-body">
+              <p><strong>macOS</strong> — double-click <code>bin/Open Dashboard.command</code> in Finder.</p>
+              <p><strong>All platforms</strong> — from Terminal:</p>
+              <code class="howto-cmd">source .venv/bin/activate   # if not already active
+python server.py</code>
+              <p>Then open <strong>http://127.0.0.1:8080</strong> in your browser. Keep Terminal open while using the dashboard.</p>
+            </div>
+          </details>
+
+          <details class="howto-step">
+            <summary><span class="howto-step-num">Step 6</span><span class="howto-step-title">Load your CSV &amp; explore</span></summary>
+            <div class="howto-body">
+              <p><strong>Easiest — drop CSV below</strong> on this page. Parsed entirely in your browser; nothing is uploaded.</p>
+              <p><strong>Or Google Sheets</strong></p>
+              <ol>
+                <li>Import your CSV into a new Google Sheet</li>
+                <li>Share → <strong>Anyone with the link → Viewer</strong></li>
+                <li>Dashboard sidebar → <strong>Google Sheets</strong> → paste URL → Connect</li>
+              </ol>
+              <p>Then explore <strong>Dashboard</strong>, <strong>Trends</strong>, <strong>Complaints</strong>, and <strong>Messages</strong> tabs.</p>
+            </div>
+          </details>
+
+          <details class="howto-step">
+            <summary><span class="howto-step-num">Help</span><span class="howto-step-title">Common issues</span></summary>
+            <div class="howto-body">
+              <ul>
+                <li><strong>not a git repository</strong> — run commands inside the <code>telegram-sentiment-tracker</code> folder, not a parent directory</li>
+                <li><strong>No module named torch</strong> — run <code>pip install -r requirements.txt</code> with venv activated</li>
+                <li><strong>Port 8080 in use</strong> — stop the other server or run <code>PORT=9090 python server.py</code></li>
+                <li><strong>Out of memory</strong> — add <code>--batch-size 8</code> to the analysis command</li>
+                <li><strong>Sheets shows 0 messages</strong> — sheet must be public Viewer; URL should show CSV text in browser</li>
+              </ul>
+            </div>
+          </details>
         </div>
+
         <div class="upload-zone" id="csvDropZone" onclick="document.getElementById('csvFileInput').click()" style="padding:36px 24px;margin-top:12px">
           <div class="upload-icon">↑</div>
           <div style="font-size:14px;font-weight:600;margin-bottom:6px">Drop a processed CSV here</div>
@@ -477,7 +603,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
   </div>
 </div>
 
-<script src="app.js?v=19"></script>
+<script src="app.js?v=20"></script>
 <script>
 const origSetWeek = setWeek;
 setWeek = function(i) { origSetWeek(i); const w2=document.getElementById('weekSelect2'); if(w2) w2.value=i; renderComplaints2(); };

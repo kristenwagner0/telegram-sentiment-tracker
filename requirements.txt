@@ -1,3 +1,5 @@
+# Full local analysis stack — telegram_sentiment.py and scripts/
+# Includes HuggingFace transformers + PyTorch (~500 MB model download on first run).
 transformers
 torch
 pandas

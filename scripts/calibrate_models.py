@@ -1,15 +1,24 @@
 """
 Compare FinBert vs KoELECTRA-NSMC on a sample of messages before a full re-run.
 
+Purpose: Pick the best Korean sentiment model for your chat style (informal vs financial).
+Deploy:  Local only. Downloads both models — run once before large analysis jobs.
+
 Usage:
-  python calibrate_models.py -i /path/to/result.json
-  python calibrate_models.py -i /path/to/result.json --samples 200
+  python scripts/calibrate_models.py -i /path/to/result.json
+  python scripts/calibrate_models.py -i /path/to/result.json --samples 200
 """
 
 from __future__ import annotations
 
 import argparse
 import random
+import sys
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
 from telegram_sentiment import (
     apply_neutral_rules,

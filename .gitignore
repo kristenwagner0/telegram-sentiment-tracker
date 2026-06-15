@@ -1,3 +1,4 @@
+# Git ignore rules — keeps secrets, large CSVs, and local exports out of the repo.
 .env
 credentials/
 exports/**

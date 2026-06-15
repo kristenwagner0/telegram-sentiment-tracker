@@ -1,4 +1,9 @@
-"""Google Sheets sync: append messages with dedup and upsert weekly summaries."""
+"""
+Google Sheets sync helper — append messages with dedup and upsert weekly summaries.
+
+Purpose: Optional auto-push from telegram_sentiment.py when run with --push-sheets.
+Deploy:  Local only (needs service-account credentials). Not used on Render.
+"""
 
 from __future__ import annotations
 
