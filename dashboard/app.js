@@ -1049,7 +1049,7 @@ function ds(label, data, color, bg, yAxisID, width, dash, fill = true) {
 function chartOptions() {
   return {
     responsive: true,
-    animation: { duration: 400 },
+    animation: { duration: 400, onComplete: () => renderAnnotations() },
     interaction: { mode: "index", intersect: false },
     plugins: {
       legend: { display: false },
@@ -1185,19 +1185,59 @@ function renderAnnotations() {
   wrap.innerHTML = "";
   if (!lineChart?.chartArea) return;
   const { chartArea } = lineChart;
-  const keys = getChartView(currentRange)?.keys || chartKeys[currentRange] || [];
+  const view = getChartView(currentRange);
+  const keys = view?.keys || chartKeys[currentRange] || [];
   const n = keys.length;
   if (n < 2) return;
   const stepW = (chartArea.right - chartArea.left) / (n - 1);
 
-  events.forEach((ev) => {
-    const idx = eventChartIndex(ev, keys, currentRange);
-    if (idx < 0 || idx >= n) return;
+  const plotted = events
+    .map((ev) => ({ ev, idx: eventChartIndex(ev, keys, currentRange) }))
+    .filter(({ idx }) => idx >= 0 && idx < n)
+    .sort((a, b) => a.idx - b.idx || a.ev.id - b.ev.id);
+
+  plotted.forEach(({ ev, idx }) => {
     const cfg = typeConfig[ev.type] || typeConfig.acc;
-    const x = chartArea.left + idx * stepW;
-    const line = document.createElement("div");
-    line.style.cssText = `position:absolute;left:${x}px;top:${chartArea.top}px;width:1px;height:${chartArea.bottom - chartArea.top}px;border-left:2px dashed ${cfg.color};opacity:.6`;
-    wrap.appendChild(line);
+    let x = chartArea.left + idx * stepW;
+    let y = chartArea.top + 20;
+
+    const netMeta = lineChart.getDatasetMeta(SERIES_INDEX.net);
+    const pt = netMeta?.data?.[idx];
+    const netVal = view?.net?.[idx];
+    if (pt && lineChart.isDatasetVisible(SERIES_INDEX.net)) {
+      x = pt.x;
+      y = pt.y;
+    } else if (netVal != null && lineChart.scales.yNet) {
+      y = lineChart.scales.yNet.getPixelForValue(netVal);
+    }
+
+    const guide = document.createElement("div");
+    guide.className = "chart-event-guide";
+    guide.style.cssText = `left:${x}px;top:${chartArea.top}px;height:${chartArea.bottom - chartArea.top}px;border-color:${cfg.color}`;
+    wrap.appendChild(guide);
+
+    const overlap = plotted.filter((p) => p.idx === idx);
+    const slot = overlap.findIndex((p) => p.ev.id === ev.id);
+    const labelBottom = 16 + slot * 38;
+
+    const milestone = document.createElement("div");
+    milestone.className = "chart-milestone";
+    milestone.style.left = `${x}px`;
+    milestone.style.top = `${y}px`;
+
+    const label = document.createElement("div");
+    label.className = "chart-milestone-label";
+    label.textContent = ev.label;
+    label.title = ev.label;
+    label.style.cssText = `bottom:${labelBottom}px;background:${cfg.bg};color:${cfg.color};border:1px solid ${cfg.color}`;
+
+    const pin = document.createElement("div");
+    pin.className = "chart-milestone-pin";
+    pin.style.background = cfg.color;
+
+    milestone.appendChild(label);
+    milestone.appendChild(pin);
+    wrap.appendChild(milestone);
   });
 }
 
