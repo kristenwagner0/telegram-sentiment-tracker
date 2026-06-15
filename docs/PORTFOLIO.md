@@ -28,6 +28,13 @@ See [DEPLOY.md](DEPLOY.md) for full steps:
 2. Deploy `server.py` on Render (free tier) with `PORTFOLIO_MODE=1`
 3. iframe embed on your static resume site with `?embed=1`
 
+## Mobile
+
+- **Bottom tab bar** appears at viewports ≤900px (sidebar hidden). Tabs mirror visible sidebar items: Dashboard, Trends, Complaints, Get the tool, Settings in portfolio mode.
+- **Default landing** stays Dashboard on mobile; use bottom tabs to reach Trends and Complaints.
+- **Deep link:** append `&panel=trends` (or `complaints`, `gettool`, etc.) to open a specific panel after load, e.g. `?embed=1&panel=trends`.
+- **Resume embed snippet** ([`portfolio/resume-embed-snippet.html`](../portfolio/resume-embed-snippet.html)): on screens ≤768px, iframe height drops to 680px and **Open full demo** + **GitHub** buttons appear above the iframe for thumb-friendly access.
+
 ## Tech stack
 
 | Layer | Choice |

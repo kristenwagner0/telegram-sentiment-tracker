@@ -263,6 +263,48 @@ let recentMsgs = [...demo.recentMsgs];
 let summary = { ...demo.summary };
 
 // ── Navigation ───────────────────────────────────────────────────────
+function isNavVisible(page) {
+  const el = document.querySelector(`.sidebar .nav-item[data-nav="${page}"]`);
+  if (!el) return false;
+  return getComputedStyle(el).display !== "none";
+}
+
+function syncMobileNav(page) {
+  document.querySelectorAll(".mobile-nav-tab").forEach((el) => {
+    el.classList.toggle("active", el.dataset.nav === page);
+  });
+}
+
+function buildMobileNav() {
+  const container = document.getElementById("mobileNav");
+  if (!container) return;
+  container.innerHTML = "";
+  document.querySelectorAll(".sidebar .nav-item[data-nav]").forEach((el) => {
+    if (getComputedStyle(el).display === "none") return;
+    const page = el.dataset.nav;
+    if (!NAV[page]) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "mobile-nav-tab";
+    btn.dataset.nav = page;
+    btn.textContent = NAV[page].title;
+    if (page === "complaints" && el.querySelector(".nav-badge")) {
+      const dot = document.createElement("span");
+      dot.className = "mobile-nav-dot";
+      dot.setAttribute("aria-hidden", "true");
+      btn.appendChild(dot);
+    }
+    btn.addEventListener("click", () => navigate(page));
+    if (el.classList.contains("active")) btn.classList.add("active");
+    container.appendChild(btn);
+  });
+}
+
+function applyInitialPanel() {
+  const panel = new URLSearchParams(window.location.search).get("panel");
+  if (panel && NAV[panel] && isNavVisible(panel)) navigate(panel);
+}
+
 function navigate(page) {
   if (!NAV[page]) return;
   document.querySelectorAll(".nav-item[data-nav]").forEach((el) => {
@@ -272,6 +314,7 @@ function navigate(page) {
   document.getElementById(`panel-${page}`)?.classList.add("active");
   document.getElementById("pageTitle").textContent = NAV[page].title;
   setMode(NAV[page].mode, null, false);
+  syncMobileNav(page);
   if (page === "trends") setTimeout(renderAnnotations, 120);
 }
 
@@ -287,6 +330,7 @@ function setMode(m, btn, updatePanels = true) {
     document.querySelectorAll(".nav-item[data-nav]").forEach((el) => {
       el.classList.toggle("active", el.dataset.nav === (m === "upload" ? "upload" : "dashboard"));
     });
+    syncMobileNav(m === "upload" ? "upload" : "dashboard");
   }
   updateModeDesc(m);
 }
@@ -338,6 +382,7 @@ function applyPortfolioNav() {
     }
   }
   document.getElementById("nav-messages")?.style.setProperty("display", "none");
+  buildMobileNav();
 }
 
 function setDataBadge(kind) {
@@ -365,6 +410,7 @@ function initNav() {
       else navigate("dashboard");
     });
   });
+  buildMobileNav();
 }
 
 // ── Parsing helpers ──────────────────────────────────────────────────
@@ -1722,6 +1768,7 @@ async function initApp() {
     } finally {
       setAppLoading(false);
     }
+    applyInitialPanel();
     return;
   }
 
@@ -1729,9 +1776,13 @@ async function initApp() {
   if (saved) {
     document.getElementById("sheetUrlInput").value = saved;
     setAppLoading(true, "Loading community data…", "Fetching from Google Sheets");
-    fetchAndApplySheet(saved)
-      .catch(() => useDemoData())
-      .finally(() => setAppLoading(false));
+    try {
+      await fetchAndApplySheet(saved);
+    } catch {
+      useDemoData();
+    } finally {
+      setAppLoading(false);
+    }
   } else {
     setAppLoading(true, "Loading community data…", "Fetching illustrative demo dataset");
     try {
@@ -1742,6 +1793,7 @@ async function initApp() {
       setAppLoading(false);
     }
   }
+  applyInitialPanel();
 }
 
 window.navigate = navigate;

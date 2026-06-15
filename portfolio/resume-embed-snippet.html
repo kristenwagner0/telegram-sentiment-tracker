@@ -6,26 +6,110 @@
   3. Paste this block into Framer (Embed/HTML), Webflow, GitHub Pages, etc.
 -->
 
-<section class="sentimenttrack-embed" style="max-width:1100px;margin:0 auto;font-family:Inter,system-ui,sans-serif">
-  <p style="font-size:14px;color:#888;margin-bottom:12px;line-height:1.5">
+<style>
+  .sentimenttrack-embed {
+    max-width: 1100px;
+    margin: 0 auto;
+    font-family: Inter, system-ui, sans-serif;
+  }
+  .sentimenttrack-embed .st-caption {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .sentimenttrack-embed .st-mobile-ctas {
+    display: none;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .sentimenttrack-embed .st-mobile-ctas a {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    text-align: center;
+  }
+  .sentimenttrack-embed .st-cta-primary {
+    background: #7b78a8;
+    color: #fff;
+  }
+  .sentimenttrack-embed .st-cta-secondary {
+    background: #161618;
+    color: #7b78a8;
+    border: 1px solid #2c2c2e;
+  }
+  .sentimenttrack-embed .st-iframe {
+    border: 0;
+    border-radius: 12px;
+    background: #0f0f12;
+    min-height: 600px;
+    display: block;
+    width: 100%;
+    height: 920px;
+  }
+  .sentimenttrack-embed .st-footer {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #888;
+  }
+  .sentimenttrack-embed .st-footer a {
+    color: #7b78a8;
+    text-decoration: none;
+  }
+  @media (max-width: 768px) {
+    .sentimenttrack-embed .st-mobile-ctas {
+      display: flex;
+    }
+    .sentimenttrack-embed .st-iframe {
+      height: 680px;
+    }
+  }
+</style>
+
+<section class="sentimenttrack-embed">
+  <p class="st-caption">
     Live demo · illustrative synthetic data · source on GitHub
   </p>
 
+  <div class="st-mobile-ctas">
+    <a
+      class="st-cta-primary"
+      href="https://YOUR-APP.onrender.com?embed=1"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Open full demo ↗
+    </a>
+    <a
+      class="st-cta-secondary"
+      href="https://github.com/kristenwagner0/telegram-sentiment-tracker"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      GitHub
+    </a>
+  </div>
+
   <iframe
+    class="st-iframe"
     src="https://YOUR-APP.onrender.com?embed=1"
     title="SentimentTrack — Telegram community analytics"
     width="100%"
-    height="920"
     loading="lazy"
-    style="border:0;border-radius:12px;background:#0F0F12;min-height:600px;display:block"
   ></iframe>
 
-  <p style="margin-top:12px;font-size:13px;color:#888">
+  <p class="st-footer">
     <a
       href="https://YOUR-APP.onrender.com?embed=1"
       target="_blank"
       rel="noopener noreferrer"
-      style="color:#7B78A8;text-decoration:none"
     >
       Open full screen ↗
     </a>
