@@ -21,9 +21,15 @@ if lsof -i :8080 >/dev/null 2>&1; then
   sleep 1
 fi
 
+export PORTFOLIO_MODE=1
+export GITHUB_REPO_URL="${GITHUB_REPO_URL:-https://github.com/kristenwagner0/telegram-sentiment-tracker}"
+
 echo "============================================"
 echo "  SentimentTrack Dashboard"
 echo "  http://127.0.0.1:8080"
+export PORTFOLIO_MODE=1
+export GITHUB_REPO_URL="${GITHUB_REPO_URL:-https://github.com/kristenwagner0/telegram-sentiment-tracker}"
+
 echo "============================================"
 echo ""
 echo "KEEP THIS WINDOW OPEN while using the dashboard."

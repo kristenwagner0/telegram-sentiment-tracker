@@ -1338,14 +1338,39 @@ function useDemoData() {
   refreshUI();
   buildWindowPills();
   applyChartView();
-  showSheetStatus("Showing demo data for portfolio preview.", "ok");
+  showSheetStatus("Offline chart preview · run server for full 135k synthetic dataset.", "ok");
   navigate("dashboard");
 }
 
+function demoTrendPct(i, total, startPos, endPos, startNeg, endNeg) {
+  const t = total <= 1 ? 0 : i / (total - 1);
+  const pos = Math.round(startPos + (endPos - startPos) * t + Math.sin(i * 0.7) * 2);
+  const neg = Math.round(startNeg + (endNeg - startNeg) * t + Math.cos(i * 0.5) * 2);
+  const neu = Math.max(5, 100 - pos - neg);
+  const adjPos = 100 - neg - neu;
+  return {
+    pos: adjPos,
+    neg,
+    neu,
+    net: Math.round(((adjPos - neg) / 100) * 100) / 100,
+  };
+}
+
 function buildDemoData() {
+  const TOTAL_WEEKS = 326;
+  const topics = [
+    "Wallet sync issues",
+    "Gas fees too high",
+    "Bridge delays",
+    "Staking UI confusion",
+    "Testnet faucet errors",
+  ];
+
   const monthlyKeys = [];
-  for (let y = 2024; y <= 2025; y++) {
-    for (let m = 1; m <= 12; m++) {
+  for (let y = 2020; y <= 2026; y++) {
+    const startM = y === 2020 ? 3 : 1;
+    const endM = y === 2026 ? 6 : 12;
+    for (let m = startM; m <= endM; m++) {
       monthlyKeys.push(`${y}-${String(m).padStart(2, "0")}`);
     }
   }
@@ -1353,58 +1378,73 @@ function buildDemoData() {
     const [y, mo] = k.split("-");
     return new Date(y, mo - 1).toLocaleString("en", { month: "short", year: "numeric" });
   });
-  const monthlyPos = monthlyKeys.map((_, i) => 48 - Math.floor(i * 0.4) + (i % 3) * 2);
-  const monthlyNeg = monthlyKeys.map((_, i) => 28 + Math.floor(i * 0.35));
-  const monthlyNeu = monthlyKeys.map((_, i) => 100 - monthlyPos[i] - monthlyNeg[i]);
-  const monthlyNet = monthlyKeys.map((_, i) =>
-    Math.round(((monthlyPos[i] - monthlyNeg[i]) / 100) * 100) / 100
-  );
+  const monthlyPos = [];
+  const monthlyNeg = [];
+  const monthlyNeu = [];
+  const monthlyNet = [];
+  monthlyKeys.forEach((_, i) => {
+    const s = demoTrendPct(i, monthlyKeys.length, 35, 58, 38, 22);
+    monthlyPos.push(s.pos);
+    monthlyNeg.push(s.neg);
+    monthlyNeu.push(s.neu);
+    monthlyNet.push(s.net);
+  });
 
-  const wkLabels = [], wkKeys = [], wkPos = [], wkNeg = [], wkNeu = [], wkNet = [];
-  const baseDate = new Date("2024-06-03");
+  const wkLabels = [];
+  const wkKeys = [];
+  const wkPos = [];
+  const wkNeg = [];
+  const wkNeu = [];
+  const wkNet = [];
   const weeks52 = [];
-  const topics = ["Bot not working", "Slow responses", "Announcements unclear", "Event scheduling", "No English support"];
   const complaints52 = [];
-  for (let i = 0; i < 52; i++) {
+  const baseDate = new Date(2020, 2, 10);
+  for (let i = 0; i < TOTAL_WEEKS; i++) {
     const d = new Date(baseDate);
     d.setDate(d.getDate() + i * 7);
-    const iso = d.toISOString().slice(0, 10);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     wkKeys.push(iso);
     weeks52.push(d.toLocaleDateString("en", { month: "short", day: "numeric", year: "numeric" }));
     wkLabels.push(d.toLocaleString("en", { month: "short", day: "numeric", year: "numeric" }));
-    const p = 40 + Math.round(Math.random() * 25);
-    const n = 18 + Math.round(Math.random() * 20);
-    wkPos.push(p);
-    wkNeg.push(n);
-    wkNeu.push(100 - p - n);
-    wkNet.push(Math.round(((p - n) / 100) * 100) / 100);
-    const sh = [...topics].sort(() => Math.random() - 0.5).slice(0, 5);
-    complaints52.push(sh.map((t, j) => ({ t, tEn: "", n: Math.max(3, 20 - j * 4) })));
+    const s = demoTrendPct(i, TOTAL_WEEKS, 35, 58, 38, 22);
+    wkPos.push(s.pos);
+    wkNeg.push(s.neg);
+    wkNeu.push(s.neu);
+    wkNet.push(s.net);
+    complaints52.push(
+      topics.slice(0, 5).map((t, j) => ({ t, tEn: "", n: Math.max(2, 18 - j * 3 - (i % 4)) }))
+    );
   }
+
+  const yearlyKeys = ["2020", "2021", "2022", "2023", "2024", "2025", "2026"];
+  const yearlyPos = [];
+  const yearlyNeg = [];
+  const yearlyNeu = [];
+  const yearlyNet = [];
+  yearlyKeys.forEach((_, i) => {
+    const s = demoTrendPct(i, yearlyKeys.length, 35, 58, 38, 22);
+    yearlyPos.push(s.pos);
+    yearlyNeg.push(s.neg);
+    yearlyNeu.push(s.neu);
+    yearlyNet.push(s.net);
+  });
 
   return {
     chartData: {
       monthly: { labels: monthlyLabels, keys: monthlyKeys, pos: monthlyPos, neg: monthlyNeg, neu: monthlyNeu, net: monthlyNet },
       weekly: { labels: wkLabels, keys: wkKeys, pos: wkPos, neg: wkNeg, neu: wkNeu, net: wkNet },
-      yearly: {
-        labels: ["2021", "2022", "2023", "2024", "2025"],
-        keys: ["2021", "2022", "2023", "2024", "2025"],
-        pos: [40, 44, 48, 51, 54],
-        neg: [40, 36, 33, 30, 27],
-        neu: [20, 20, 19, 19, 19],
-        net: [0.38, 0.18, 0.08, 0.02, -0.05],
-      },
+      yearly: { labels: yearlyKeys, keys: yearlyKeys, pos: yearlyPos, neg: yearlyNeg, neu: yearlyNeu, net: yearlyNet },
     },
     chartKeys: {
       monthly: monthlyKeys,
       weekly: wkKeys,
-      yearly: ["2021", "2022", "2023", "2024", "2025"],
+      yearly: yearlyKeys,
     },
     weeks52,
     complaints52,
     complainers: [
-      { initials: "JK", color: COLORS.neg, bg: COLORS.negBg, name: "User #2841", msgs: 14, topics: "Bot errors, scheduling" },
-      { initials: "MS", color: COLORS.neu, bg: COLORS.neuBg, name: "User #1093", msgs: 9, topics: "Announcements, links" },
+      { initials: "NV", color: COLORS.neg, bg: COLORS.negBg, name: "NovaTrader218", msgs: 12, topics: "Bridge delays, gas fees" },
+      { initials: "MK", color: COLORS.neu, bg: COLORS.neuBg, name: "MinjiValidator91", msgs: 8, topics: "Staking UI, docs" },
     ],
     responseData: [
       { label: "Calming responses", sub: "Threads that quieted after admin reply", color: "var(--pos)", badge: "62%", badgeBg: "var(--pos-bg)", badgeColor: "var(--pos)" },
@@ -1412,16 +1452,16 @@ function buildDemoData() {
       { label: "No measurable effect", sub: "Sentiment unchanged after reply", color: "var(--text3)", badge: "20%", badgeBg: "var(--card2)", badgeColor: "var(--text2)" },
     ],
     posThemes: [
-      { text: "Event quality", textEn: "", n: 87 },
+      { text: "Helix mainnet upgrade", textEn: "", n: 87 },
       { text: "Community helpfulness", textEn: "", n: 74 },
-      { text: "Useful announcements", textEn: "", n: 61 },
+      { text: "Useful governance updates", textEn: "", n: 61 },
     ],
     recentMsgs: [
-      { date: "May 26", text: "Event timing was great this week.", text_en: "", s: "pos" },
-      { date: "May 25", text: "Why is the bot still broken? Third week now.", text_en: "", s: "neg" },
-      { date: "May 25", text: "Looking forward to next month's schedule.", text_en: "", s: "neu" },
+      { date: "Jun 4", text: "헬릭스 메인넷 업그레이드 정말 매끄럽게 진행됐어요!", text_en: "", s: "pos" },
+      { date: "Jun 3", text: "브릿지 처리 대기 시간이 너무 길어요.", text_en: "", s: "neg" },
+      { date: "Jun 3", text: "다음 AMA 일정 공지 확인했습니다.", text_en: "", s: "neu" },
     ],
-    summary: { total: 4821, posPct: 52, negPct: 28, neuPct: 20, weekMsgs: 312, weekPos: 52, weekNeg: 28, weekNeu: 20 },
+    summary: { total: 134971, posPct: 50, negPct: 28, neuPct: 22, weekMsgs: 414, weekPos: 54, weekNeg: 24, weekNeu: 22 },
   };
 }
 
@@ -1436,7 +1476,16 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("lko").addEventListener("click", () => setLang("ko"));
   document.getElementById("len").addEventListener("click", () => setLang("en"));
   document.getElementById("connectSheetBtn").addEventListener("click", loadSheetFromInput);
-  document.getElementById("useDemoBtn").addEventListener("click", useDemoData);
+  document.getElementById("useDemoBtn").addEventListener("click", async () => {
+    setAppLoading(true, "Loading illustrative demo…", "Fetching synthetic dataset");
+    try {
+      await fetchAndApplyDemo();
+    } catch {
+      useDemoData();
+    } finally {
+      setAppLoading(false);
+    }
+  });
   document.getElementById("msgSearchBtn")?.addEventListener("click", () => runMessageSearch());
   document.getElementById("msgSearch")?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
@@ -1497,8 +1546,14 @@ async function initApp() {
       .catch(() => useDemoData())
       .finally(() => setAppLoading(false));
   } else {
-    bootstrapApp();
-    setDataBadge("demo");
+    setAppLoading(true, "Loading community data…", "Fetching illustrative demo dataset");
+    try {
+      await fetchAndApplyDemo();
+    } catch {
+      useDemoData();
+    } finally {
+      setAppLoading(false);
+    }
   }
 }
 

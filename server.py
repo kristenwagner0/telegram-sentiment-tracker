@@ -83,21 +83,37 @@ def app_config():
     })
 
 
+def local_demo_csv_path() -> Path:
+    raw = os.environ.get("LOCAL_DEMO_CSV", "").strip()
+    if raw:
+        return Path(raw).expanduser()
+    return ROOT / "output" / "synthetic_demo.csv"
+
+
 @app.route("/api/demo")
 def demo_data():
     url = os.environ.get("DEMO_SHEET_URL", "").strip()
-    if not url:
-        return jsonify({"error": "DEMO_SHEET_URL is not configured on the server"}), 503
+    if url:
+        content, err = fetch_sheet_csv(url)
+        if err:
+            return jsonify({"error": err}), 502
+        return Response(
+            content,
+            mimetype="text/csv; charset=utf-8",
+            headers={"Cache-Control": "public, max-age=300"},
+        )
 
-    content, err = fetch_sheet_csv(url)
-    if err:
-        return jsonify({"error": err}), 502
+    local_csv = local_demo_csv_path()
+    if local_csv.is_file():
+        return Response(
+            local_csv.read_bytes(),
+            mimetype="text/csv; charset=utf-8",
+            headers={"Cache-Control": "public, max-age=300"},
+        )
 
-    return Response(
-        content,
-        mimetype="text/csv; charset=utf-8",
-        headers={"Cache-Control": "public, max-age=300"},
-    )
+    return jsonify({
+        "error": "DEMO_SHEET_URL is not configured and no local synthetic_demo.csv was found",
+    }), 503
 
 
 @app.route("/api/sheet")
