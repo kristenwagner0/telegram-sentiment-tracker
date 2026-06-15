@@ -606,13 +606,13 @@ function aggregateFromMessages(msgs) {
   const posMsgs = valid.filter((m) => m.sentiment_label === "pos");
   const themeWords = {};
   posMsgs.forEach((m) => {
-    const words = m.text.split(/\s+/).slice(0, 3).join(" ").slice(0, 30);
-    if (words) themeWords[words] = (themeWords[words] || 0) + 1;
+    const label = positiveThemeLabel(m.text);
+    themeWords[label] = (themeWords[label] || 0) + 1;
   });
   const posThemesLocal = Object.entries(themeWords)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
-    .map(([text, n]) => ({ text: text.slice(0, 40), textEn: "", n }));
+    .map(([text, n]) => ({ text, textEn: "", n }));
 
   const recentMsgsLocal = [...valid]
     .sort((a, b) => b.date - a.date)
@@ -700,6 +700,23 @@ function bucketData(map, keys, labelFn) {
     net.push(netScore(group));
   });
   return { labels, keys, pos, neg, neu, net };
+}
+
+function positiveThemeLabel(text) {
+  const rules = [
+    [/메인넷|mainnet|업그레이드|upgrade|patch|rollout|블록/i, "Mainnet upgrades"],
+    [/스테이킹|staking|리워드|reward|epoch|APY|delegat|unbond/i, "Staking rewards"],
+    [/커뮤니티|community|답변|helpful|모더|member|workaround/i, "Community support"],
+    [/거버넌스|governance|AMA|로드맵|roadmap|HIP|투표|vote/i, "Governance & AMA"],
+    [/테스트넷|testnet|faucet|sandbox|샌드박스/i, "Testnet stability"],
+    [/온보딩|onboarding|가이드|docs|문서|FAQ|tutorial/i, "Onboarding & docs"],
+    [/노드|validator|밸리|검증|monitoring|slot/i, "Validator operations"],
+    [/지갑|wallet|연동|connect/i, "Wallet experience"],
+  ];
+  for (const [re, label] of rules) {
+    if (re.test(text || "")) return label;
+  }
+  return "General praise";
 }
 
 function bucketByMonth(msgs) {
