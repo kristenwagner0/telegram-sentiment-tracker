@@ -1411,20 +1411,6 @@ function demoTrendPct(i, total, startPos, endPos, startNeg, endNeg, isoDate) {
   };
 }
 
-
-  const t = total <= 1 ? 0 : i / (total - 1);
-  const pos = Math.round(startPos + (endPos - startPos) * t + Math.sin(i * 0.7) * 2);
-  const neg = Math.round(startNeg + (endNeg - startNeg) * t + Math.cos(i * 0.5) * 2);
-  const neu = Math.max(5, 100 - pos - neg);
-  const adjPos = 100 - neg - neu;
-  return {
-    pos: adjPos,
-    neg,
-    neu,
-    net: Math.round(((adjPos - neg) / 100) * 100) / 100,
-  };
-}
-
 function buildDemoData() {
   const TOTAL_WEEKS = 326;
   const topics = [
