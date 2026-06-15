@@ -75,6 +75,167 @@ const NAV = {
   settings: { title: "Settings", mode: "community" },
 };
 
+const DEMO_SENTIMENT_EVENTS = [
+  ["2021-05-03", "2021-07-12", -11, 13],
+  ["2022-10-17", "2023-02-06", -16, 20],
+  ["2023-08-21", "2023-10-09", 15, -11],
+  ["2024-02-26", "2024-05-20", 20, -14],
+  ["2024-09-16", "2024-11-04", -12, 15],
+  ["2025-05-05", "2025-07-21", 14, -10],
+];
+
+function demoEventStrength(isoDate, start, end) {
+  const ws = new Date(isoDate).getTime();
+  const s = new Date(start).getTime();
+  const e = new Date(end).getTime();
+  if (ws < s || ws > e) return 0;
+  const mid = (s + e) / 2;
+  const half = Math.max((e - s) / 2, 86400000);
+  return Math.max(0, 1 - Math.abs(ws - mid) / half);
+}
+
+function demoEventModifier(isoDate) {
+  let posD = 0;
+  let negD = 0;
+  for (const [start, end, pd, nd] of DEMO_SENTIMENT_EVENTS) {
+    const strength = demoEventStrength(isoDate, start, end);
+    if (strength) {
+      posD += (pd / 100) * strength;
+      negD += (nd / 100) * strength;
+    }
+  }
+  return { posD, negD };
+}
+
+function demoTrendPct(i, total, startPos, endPos, startNeg, endNeg, isoDate) {
+  const t = total <= 1 ? 0 : i / (total - 1);
+  let pos = startPos + (endPos - startPos) * t + Math.sin(i * 0.7) * 2;
+  let neg = startNeg + (endNeg - startNeg) * t + Math.cos(i * 0.5) * 2;
+  if (isoDate) {
+    const { posD, negD } = demoEventModifier(isoDate);
+    pos += posD * 100;
+    neg += negD * 100;
+  }
+  const neu = Math.max(5, 100 - pos - neg);
+  const adjPos = 100 - neg - neu;
+  return {
+    pos: Math.round(Math.max(8, Math.min(78, adjPos))),
+    neg: Math.round(Math.max(8, Math.min(62, neg))),
+    neu: Math.round(neu),
+    net: Math.round(((adjPos - neg) / 100) * 100) / 100,
+  };
+}
+
+function buildDemoData() {
+  const TOTAL_WEEKS = 326;
+  const topics = [
+    "Wallet sync issues",
+    "Gas fees too high",
+    "Bridge delays",
+    "Staking UI confusion",
+    "Testnet faucet errors",
+  ];
+
+  const monthlyKeys = [];
+  for (let y = 2020; y <= 2026; y++) {
+    const startM = y === 2020 ? 3 : 1;
+    const endM = y === 2026 ? 6 : 12;
+    for (let m = startM; m <= endM; m++) {
+      monthlyKeys.push(`${y}-${String(m).padStart(2, "0")}`);
+    }
+  }
+  const monthlyLabels = monthlyKeys.map((k) => {
+    const [y, mo] = k.split("-");
+    return new Date(y, mo - 1).toLocaleString("en", { month: "short", year: "numeric" });
+  });
+  const monthlyPos = [];
+  const monthlyNeg = [];
+  const monthlyNeu = [];
+  const monthlyNet = [];
+  monthlyKeys.forEach((_, i) => {
+    const s = demoTrendPct(i, monthlyKeys.length, 35, 58, 38, 22, `${monthlyKeys[i]}-01`);
+    monthlyPos.push(s.pos);
+    monthlyNeg.push(s.neg);
+    monthlyNeu.push(s.neu);
+    monthlyNet.push(s.net);
+  });
+
+  const wkLabels = [];
+  const wkKeys = [];
+  const wkPos = [];
+  const wkNeg = [];
+  const wkNeu = [];
+  const wkNet = [];
+  const weeks52 = [];
+  const complaints52 = [];
+  const baseDate = new Date(2020, 2, 10);
+  for (let i = 0; i < TOTAL_WEEKS; i++) {
+    const d = new Date(baseDate);
+    d.setDate(d.getDate() + i * 7);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    wkKeys.push(iso);
+    weeks52.push(d.toLocaleDateString("en", { month: "short", day: "numeric", year: "numeric" }));
+    wkLabels.push(d.toLocaleString("en", { month: "short", day: "numeric", year: "numeric" }));
+    const s = demoTrendPct(i, TOTAL_WEEKS, 35, 58, 38, 22, iso);
+    wkPos.push(s.pos);
+    wkNeg.push(s.neg);
+    wkNeu.push(s.neu);
+    wkNet.push(s.net);
+    complaints52.push(
+      topics.slice(0, 5).map((t, j) => ({ t, tEn: "", n: Math.max(2, 18 - j * 3 - (i % 4)) }))
+    );
+  }
+
+  const yearlyKeys = ["2020", "2021", "2022", "2023", "2024", "2025", "2026"];
+  const yearlyPos = [];
+  const yearlyNeg = [];
+  const yearlyNeu = [];
+  const yearlyNet = [];
+  yearlyKeys.forEach((_, i) => {
+    const s = demoTrendPct(i, yearlyKeys.length, 35, 58, 38, 22, `${yearlyKeys[i]}-06-01`);
+    yearlyPos.push(s.pos);
+    yearlyNeg.push(s.neg);
+    yearlyNeu.push(s.neu);
+    yearlyNet.push(s.net);
+  });
+
+  return {
+    chartData: {
+      monthly: { labels: monthlyLabels, keys: monthlyKeys, pos: monthlyPos, neg: monthlyNeg, neu: monthlyNeu, net: monthlyNet },
+      weekly: { labels: wkLabels, keys: wkKeys, pos: wkPos, neg: wkNeg, neu: wkNeu, net: wkNet },
+      yearly: { labels: yearlyKeys, keys: yearlyKeys, pos: yearlyPos, neg: yearlyNeg, neu: yearlyNeu, net: yearlyNet },
+    },
+    chartKeys: {
+      monthly: monthlyKeys,
+      weekly: wkKeys,
+      yearly: yearlyKeys,
+    },
+    weeks52,
+    complaints52,
+    complainers: [
+      { initials: "NV", color: COLORS.neg, bg: COLORS.negBg, name: "NovaTrader218", msgs: 12, topics: "Bridge delays, gas fees" },
+      { initials: "MK", color: COLORS.neu, bg: COLORS.neuBg, name: "MinjiValidator91", msgs: 8, topics: "Staking UI, docs" },
+    ],
+    responseData: [
+      { label: "Calming responses", sub: "Threads that quieted after admin reply", color: "var(--pos)", badge: "62%", badgeBg: "var(--pos-bg)", badgeColor: "var(--pos)" },
+      { label: "Escalating responses", sub: "More negative messages after reply", color: "var(--neg)", badge: "18%", badgeBg: "var(--neg-bg)", badgeColor: "var(--neg)" },
+      { label: "No measurable effect", sub: "Sentiment unchanged after reply", color: "var(--text3)", badge: "20%", badgeBg: "var(--card2)", badgeColor: "var(--text2)" },
+    ],
+    posThemes: [
+      { text: "Helix mainnet upgrade", textEn: "", n: 87 },
+      { text: "Community helpfulness", textEn: "", n: 74 },
+      { text: "Useful governance updates", textEn: "", n: 61 },
+    ],
+    recentMsgs: [
+      { date: "Jun 4", text: "헬릭스 메인넷 업그레이드 정말 매끄럽게 진행됐어요!", text_en: "", s: "pos" },
+      { date: "Jun 3", text: "브릿지 처리 대기 시간이 너무 길어요.", text_en: "", s: "neg" },
+      { date: "Jun 3", text: "다음 AMA 일정 공지 확인했습니다.", text_en: "", s: "neu" },
+    ],
+    summary: { total: 134971, posPct: 50, negPct: 28, neuPct: 22, weekMsgs: 414, weekPos: 54, weekNeg: 24, weekNeu: 22 },
+  };
+}
+
+
 const demo = buildDemoData();
 
 let chartData = { ...demo.chartData };
@@ -423,18 +584,22 @@ function parseAndApplyCsv(text) {
 async function fetchAndApplyDemo() {
   showSheetStatus("Loading illustrative demo…", "loading");
   setAppLoading(true, "Loading community data…", "Fetching illustrative demo dataset");
-  const res = await fetch("/api/demo");
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || res.statusText);
+  try {
+    const res = await fetch("/api/demo");
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || res.statusText);
+    }
+    setAppLoading(true, "Loading community data…", "Parsing messages and building charts…");
+    const count = parseAndApplyCsv(await res.text());
+    dataSource = "portfolio";
+    setDataBadge("portfolio");
+    updateModeDesc("community");
+    showSheetStatus(`Illustrative demo · ${count.toLocaleString()} synthetic messages loaded`, "ok");
+    navigate("dashboard");
+  } finally {
+    setAppLoading(false);
   }
-  setAppLoading(true, "Loading community data…", "Parsing messages and building charts…");
-  const count = parseAndApplyCsv(await res.text());
-  dataSource = "portfolio";
-  setDataBadge("portfolio");
-  updateModeDesc("community");
-  showSheetStatus(`Illustrative demo · ${count.toLocaleString()} synthetic messages loaded`, "ok");
-  navigate("dashboard");
 }
 
 async function handleCsvFile(file) {
@@ -1358,166 +1523,6 @@ function useDemoData() {
   applyChartView();
   showSheetStatus("Offline chart preview · run server for full 135k synthetic dataset.", "ok");
   navigate("dashboard");
-}
-
-const DEMO_SENTIMENT_EVENTS = [
-  ["2021-05-03", "2021-07-12", -11, 13],
-  ["2022-10-17", "2023-02-06", -16, 20],
-  ["2023-08-21", "2023-10-09", 15, -11],
-  ["2024-02-26", "2024-05-20", 20, -14],
-  ["2024-09-16", "2024-11-04", -12, 15],
-  ["2025-05-05", "2025-07-21", 14, -10],
-];
-
-function demoEventStrength(isoDate, start, end) {
-  const ws = new Date(isoDate).getTime();
-  const s = new Date(start).getTime();
-  const e = new Date(end).getTime();
-  if (ws < s || ws > e) return 0;
-  const mid = (s + e) / 2;
-  const half = Math.max((e - s) / 2, 86400000);
-  return Math.max(0, 1 - Math.abs(ws - mid) / half);
-}
-
-function demoEventModifier(isoDate) {
-  let posD = 0;
-  let negD = 0;
-  for (const [start, end, pd, nd] of DEMO_SENTIMENT_EVENTS) {
-    const strength = demoEventStrength(isoDate, start, end);
-    if (strength) {
-      posD += (pd / 100) * strength;
-      negD += (nd / 100) * strength;
-    }
-  }
-  return { posD, negD };
-}
-
-function demoTrendPct(i, total, startPos, endPos, startNeg, endNeg, isoDate) {
-  const t = total <= 1 ? 0 : i / (total - 1);
-  let pos = startPos + (endPos - startPos) * t + Math.sin(i * 0.7) * 2;
-  let neg = startNeg + (endNeg - startNeg) * t + Math.cos(i * 0.5) * 2;
-  if (isoDate) {
-    const { posD, negD } = demoEventModifier(isoDate);
-    pos += posD * 100;
-    neg += negD * 100;
-  }
-  const neu = Math.max(5, 100 - pos - neg);
-  const adjPos = 100 - neg - neu;
-  return {
-    pos: Math.round(Math.max(8, Math.min(78, adjPos))),
-    neg: Math.round(Math.max(8, Math.min(62, neg))),
-    neu: Math.round(neu),
-    net: Math.round(((adjPos - neg) / 100) * 100) / 100,
-  };
-}
-
-function buildDemoData() {
-  const TOTAL_WEEKS = 326;
-  const topics = [
-    "Wallet sync issues",
-    "Gas fees too high",
-    "Bridge delays",
-    "Staking UI confusion",
-    "Testnet faucet errors",
-  ];
-
-  const monthlyKeys = [];
-  for (let y = 2020; y <= 2026; y++) {
-    const startM = y === 2020 ? 3 : 1;
-    const endM = y === 2026 ? 6 : 12;
-    for (let m = startM; m <= endM; m++) {
-      monthlyKeys.push(`${y}-${String(m).padStart(2, "0")}`);
-    }
-  }
-  const monthlyLabels = monthlyKeys.map((k) => {
-    const [y, mo] = k.split("-");
-    return new Date(y, mo - 1).toLocaleString("en", { month: "short", year: "numeric" });
-  });
-  const monthlyPos = [];
-  const monthlyNeg = [];
-  const monthlyNeu = [];
-  const monthlyNet = [];
-  monthlyKeys.forEach((_, i) => {
-    const s = demoTrendPct(i, monthlyKeys.length, 35, 58, 38, 22, `${monthlyKeys[i]}-01`);
-    monthlyPos.push(s.pos);
-    monthlyNeg.push(s.neg);
-    monthlyNeu.push(s.neu);
-    monthlyNet.push(s.net);
-  });
-
-  const wkLabels = [];
-  const wkKeys = [];
-  const wkPos = [];
-  const wkNeg = [];
-  const wkNeu = [];
-  const wkNet = [];
-  const weeks52 = [];
-  const complaints52 = [];
-  const baseDate = new Date(2020, 2, 10);
-  for (let i = 0; i < TOTAL_WEEKS; i++) {
-    const d = new Date(baseDate);
-    d.setDate(d.getDate() + i * 7);
-    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    wkKeys.push(iso);
-    weeks52.push(d.toLocaleDateString("en", { month: "short", day: "numeric", year: "numeric" }));
-    wkLabels.push(d.toLocaleString("en", { month: "short", day: "numeric", year: "numeric" }));
-    const s = demoTrendPct(i, TOTAL_WEEKS, 35, 58, 38, 22, iso);
-    wkPos.push(s.pos);
-    wkNeg.push(s.neg);
-    wkNeu.push(s.neu);
-    wkNet.push(s.net);
-    complaints52.push(
-      topics.slice(0, 5).map((t, j) => ({ t, tEn: "", n: Math.max(2, 18 - j * 3 - (i % 4)) }))
-    );
-  }
-
-  const yearlyKeys = ["2020", "2021", "2022", "2023", "2024", "2025", "2026"];
-  const yearlyPos = [];
-  const yearlyNeg = [];
-  const yearlyNeu = [];
-  const yearlyNet = [];
-  yearlyKeys.forEach((_, i) => {
-    const s = demoTrendPct(i, yearlyKeys.length, 35, 58, 38, 22, `${yearlyKeys[i]}-06-01`);
-    yearlyPos.push(s.pos);
-    yearlyNeg.push(s.neg);
-    yearlyNeu.push(s.neu);
-    yearlyNet.push(s.net);
-  });
-
-  return {
-    chartData: {
-      monthly: { labels: monthlyLabels, keys: monthlyKeys, pos: monthlyPos, neg: monthlyNeg, neu: monthlyNeu, net: monthlyNet },
-      weekly: { labels: wkLabels, keys: wkKeys, pos: wkPos, neg: wkNeg, neu: wkNeu, net: wkNet },
-      yearly: { labels: yearlyKeys, keys: yearlyKeys, pos: yearlyPos, neg: yearlyNeg, neu: yearlyNeu, net: yearlyNet },
-    },
-    chartKeys: {
-      monthly: monthlyKeys,
-      weekly: wkKeys,
-      yearly: yearlyKeys,
-    },
-    weeks52,
-    complaints52,
-    complainers: [
-      { initials: "NV", color: COLORS.neg, bg: COLORS.negBg, name: "NovaTrader218", msgs: 12, topics: "Bridge delays, gas fees" },
-      { initials: "MK", color: COLORS.neu, bg: COLORS.neuBg, name: "MinjiValidator91", msgs: 8, topics: "Staking UI, docs" },
-    ],
-    responseData: [
-      { label: "Calming responses", sub: "Threads that quieted after admin reply", color: "var(--pos)", badge: "62%", badgeBg: "var(--pos-bg)", badgeColor: "var(--pos)" },
-      { label: "Escalating responses", sub: "More negative messages after reply", color: "var(--neg)", badge: "18%", badgeBg: "var(--neg-bg)", badgeColor: "var(--neg)" },
-      { label: "No measurable effect", sub: "Sentiment unchanged after reply", color: "var(--text3)", badge: "20%", badgeBg: "var(--card2)", badgeColor: "var(--text2)" },
-    ],
-    posThemes: [
-      { text: "Helix mainnet upgrade", textEn: "", n: 87 },
-      { text: "Community helpfulness", textEn: "", n: 74 },
-      { text: "Useful governance updates", textEn: "", n: 61 },
-    ],
-    recentMsgs: [
-      { date: "Jun 4", text: "헬릭스 메인넷 업그레이드 정말 매끄럽게 진행됐어요!", text_en: "", s: "pos" },
-      { date: "Jun 3", text: "브릿지 처리 대기 시간이 너무 길어요.", text_en: "", s: "neg" },
-      { date: "Jun 3", text: "다음 AMA 일정 공지 확인했습니다.", text_en: "", s: "neu" },
-    ],
-    summary: { total: 134971, posPct: 50, negPct: 28, neuPct: 22, weekMsgs: 414, weekPos: 54, weekNeg: 24, weekNeu: 22 },
-  };
 }
 
 // ── Init ─────────────────────────────────────────────────────────────
