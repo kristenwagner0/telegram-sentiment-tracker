@@ -6,11 +6,11 @@ Parse Telegram Desktop `result.json` exports, score message sentiment (Korean or
 
 **New here?** Read the full walkthrough: **[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)** — download from GitHub, export Telegram data, install, analyze, and open the dashboard step by step.
 
-## Open the dashboard (matches your Claude design)
+## Open the dashboard 
 
 1. Go to this folder in **Finder**
 2. **Double-click `bin/Open Dashboard.command`**
-3. Your browser opens **SentimentTrack** — dark UI, left nav, charts (same look as your Claude HTML)
+3. Your browser opens **SentimentTrack** — dark UI, left nav, charts 
 
 **All sidebar links are clickable:** Dashboard · Trends · Complaints · Messages · Google Sheets · Upload export · Settings
 
